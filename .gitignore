@@ -1,0 +1,23 @@
+# Tài liệu, báo cáo, cấu hình trợ lý — không cần để chạy web
+baocao/
+.claude/
+CLAUDE.md
+*.docx
+*.pdf
+
+# Môi trường Python
+backend/venv/
+venv/
+__pycache__/
+*.pyc
+
+# Bí mật và dữ liệu người dùng
+backend/.env
+.env
+backend/uploads/
+
+# Rác hệ điều hành / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

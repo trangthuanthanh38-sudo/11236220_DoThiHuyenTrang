@@ -1,0 +1,368 @@
+ <!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghi chú</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23ffffff' stroke='%231f1b16' stroke-width='2'/%3E%3Cpath d='M16 8 L18 14 L24 16 L18 18 L16 24 L14 18 L8 16 L14 14 Z' fill='%230d6efd'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;600&family=Nunito:wght@400;600;700&family=Noto+Sans:wght@400;600;700&family=Noto+Serif:wght@400;600;700&family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;600;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- CKEditor 5 (superbuild — mọi plugin đóng gói sẵn, không cần bước build riêng) -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+<!-- PDF.js — render PDF gốc lên canvas cho mục "Tải PDF lên" (xem #mount-soanthao-pdfhost
+     trong <body> và khối JS "Tải PDF lên" trong js/ghichu_soanthao.js). Bản 3.11.174 là bản
+     build UMD cuối cùng (window.pdfjsLib toàn cục) — các bản 4.x/5.x trở đi chỉ phát hành
+     dạng ES module. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
+<!-- jsPDF — chỉ dùng để GHÉP các trang/canvas đã render thành 1 file PDF MỚI cho nút
+     Download/In dùng chung cho cả Chương lẫn File PDF (xem downloadAnnotatedPdf()/
+     printAnnotatedPdf()/downloadChapterPdf() trong js/ghichu.js). Bản UMD toàn cục
+     (window.jspdf.jsPDF). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- html2canvas — chỉ dùng để "chụp" nội dung Chương (trang CKEditor đang hiển thị) thành
+     ảnh, phục vụ downloadChapterPdf() ghép vào jsPDF. File PDF thì không cần lib này (đã có
+     PDF.js render sẵn). Bản UMD toàn cục (window.html2canvas). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="../css/ghichu.css">
+<link rel="stylesheet" href="../css/ghichu_soanthao.css">
+<link rel="stylesheet" href="../css/ghichu_chucnangcacthe.css">
+<link rel="stylesheet" href="../css/ghichu_ve.css">
+<link rel="stylesheet" href="../css/ghichu_review.css">
+<link rel="stylesheet" href="../css/ghichu_giaodien.css">
+<link rel="stylesheet" href="../css/ghichu_nguon.css">
+<link rel="stylesheet" href="../css/ghichu_cardlist.css">
+<link rel="stylesheet" href="../css/ghichu_chiase.css">
+<link rel="stylesheet" href="../css/ghichu_ontap.css">
+<link rel="stylesheet" href="../css/ghichu_thithu.css">
+<link rel="stylesheet" href="../css/ghichu_flashcard.css">
+<link rel="stylesheet" href="../css/ghichu_mindmap.css">
+<link rel="stylesheet" href="../css/ghichu_tomtat.css">
+<link rel="stylesheet" href="../css/ghichu_lichbieu.css">
+<link rel="stylesheet" href="../css/ghichu_thongke.css">
+<link rel="stylesheet" href="../css/ghichu_hanmuc.css">
+<!-- Responsive (Desktop / Tablet / Điện thoại): nạp CUỐI để ghi đè — chỉ chứa @media, desktop không đổi -->
+<link rel="stylesheet" href="../css/responsive.css">
+<script>
+  // BR-13 / UC-01 bước 6: tài khoản quản trị viên không dùng trang soạn thảo của người học -> sang Admin Console
+  // ngay, trước khi trang vẽ ra. Đọc claim "role" trong JWT (chỉ để điều hướng — quyền thật vẫn do máy chủ kiểm).
+  (function () {
+    try {
+      var t = localStorage.getItem("access_token");
+      if (!t) return;
+      var p = JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      if (p.role === "admin") location.replace("admin.html");
+    } catch (e) { /* token hỏng: để trang tự xử lý như chưa đăng nhập */ }
+  })();
+</script>
+<script>
+  // UC-09: gán data-theme SỚM NHẤT có thể (trước khi phần còn lại của trang vẽ ra) để
+  // tránh nhấp nháy sáng->tối khi người dùng đã từng chọn "Tối". Dùng bản rút gọn của
+  // computeEffectiveTheme() trong js/ghichu.js — giữ đồng bộ nếu sửa logic "system" ở đó.
+  (function () {
+    try {
+      var pref = localStorage.getItem("td_theme_pref") || "system";
+      var effective = pref === "system"
+        ? (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : pref;
+      document.documentElement.setAttribute("data-theme", effective);
+    } catch (e) {}
+  })();
+  // Che giao diện tới khi ghichu.js dựng xong (init() gỡ class này). Trước đây lúc chờ tải thư viện CDN + các tệp .frag,
+  // trang hiện khung dở dang: chưa có thanh ribbon, cây Notebooks và trang soạn thảo xếp chồng 1 cột. Gỡ dự phòng sau 20 giây
+  // để lỡ JS lỗi vẫn thấy trang.
+  document.documentElement.classList.add("app-booting");
+  setTimeout(function () { document.documentElement.classList.remove("app-booting"); }, 20000);
+</script>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- Topbar soạn thảo (tab File/Home/Insert… + ribbon): ẩn khi đang ở chế độ Studio AI
+       (Hỏi đáp tri thức / Tạo câu hỏi ôn tập), hiện lại khi quay về soạn thảo — chỉ bật/tắt
+       [hidden], không xoá DOM; xem updateWorkspaceCols() trong js/ghichu.js. -->
+  <div class="topbar" id="topbar">
+    <div class="tabstrip">
+      <!-- Responsive: mở ngăn kéo cây Notebook khi cửa sổ hẹp (< 880px) — js/ghichu.js updateWorkspaceCols() -->
+      <button type="button" class="btn-tree" id="btn-tree" title="Notebooks" aria-label="Mở danh sách Notebooks" aria-controls="sidebar" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h16"></path></svg>
+      </button>
+      <span class="brand">TD</span>
+      <div class="tabs" id="tabs"></div>
+      <div class="topbar-actions">
+        <!-- Ai đang mở cùng Chương được chia sẻ (như avatar đồng tác giả của Word) — js/ghichu_chiase.js -->
+        <div class="share-presence" id="share-presence" hidden></div>
+        <!-- Chuông thông báo (nhắc lịch, thẻ đến hạn ôn, bài làm dở) — js/ghichu_thongbao.js -->
+        <button type="button" class="btn-noti" id="btn-noti" title="Thông báo" aria-label="Thông báo" aria-haspopup="dialog" aria-expanded="false">
+          <svg width="16" height="18" viewBox="0 0 20 22" fill="none"><path d="M10 2a6 6 0 0 0-6 6v4.2L2.4 15.4c-.3.6.1 1.3.8 1.3h13.6c.7 0 1.1-.7.8-1.3L16 12.2V8a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M7.6 19.2a2.6 2.6 0 0 0 4.8 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <i id="btn-noti-dot" hidden></i>
+        </button>
+        <button type="button" class="btn-chip" id="btn-share" title="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.4 10.7l7.2-4.2M8.4 13.3l7.2 4.2"></path></svg>
+          Share
+        </button>
+        <button type="button" class="btn-chip btn-chip--studio" id="btn-studio" title="Ẩn/hiện Studio">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 4.6 4.6 1.9-4.6 1.9L12 16.5l-1.9-4.6L5.5 10l4.6-1.9z"></path><path d="M18.5 16.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"></path></svg>
+          Studio
+        </button>
+      </div>
+    </div>
+    <div class="ribbon" id="ribbon"></div>
+  </div>
+
+  <div class="workspace" id="workspace">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-title-row">
+          <span class="eyebrow">Notebooks</span>
+          <div class="sidebar-title-actions">
+            <button type="button" class="icon-btn-sm" id="btn-new-subject" title="Thêm môn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            </button>
+          </div>
+          <!-- Dùng chung cho mọi lượt tải PDF lên — triggerPdfUpload(subjectId) trong
+               ghichu_soanthao.js nhớ Môn học đích qua pdfUploadTargetSubject trước khi .click(). -->
+          <input type="file" id="pdf-file-input" accept="application/pdf,.pdf" hidden>
+          <!-- UC-19: nút "+" ở ô nhập AI Chat — triggerChatFileUpload() trong
+               ghichu_chat_dinhkem.js. -->
+          <input type="file" id="chat-file-input" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif,text/plain" hidden>
+        </div>
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b93a5" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+          <div class="search-field">
+            <input type="text" class="search-input" id="tree-search" autocomplete="off">
+            <div class="search-marquee" id="search-marquee">
+              <span>Tìm môn hoặc chương</span><span>Tìm môn hoặc chương</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tree-scroll" id="tree-scroll"></div>
+      <div class="sidebar-foot">
+        <button type="button" class="avatar-badge" id="btn-account" title="Account" aria-haspopup="true" aria-expanded="false"></button>
+        <div style="min-width:0">
+          <div class="sidebar-foot-title">My Library</div>
+          <div class="sidebar-foot-sub" id="total-chapters">0 chapters</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="editor-pane">
+      <div class="editor-head" id="editor-head">
+        <span class="crumb-subject" id="crumb-subject">Chưa chọn môn</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-chapter" id="crumb-chapter">Chưa chọn chương</span>
+        <span class="status-pill" id="status-pill"></span>
+        <div class="editor-head-actions">
+          <!-- Thanh công cụ xem PDF (Trang X/Y, zoom) — chỉ hiện khi đang xem 1 File PDF
+               (switchEditorView() trong ghichu_soanthao.js toggle hidden), đặt ngay cạnh tên
+               File PDF ở breadcrumb thay vì trôi nổi trong nội dung như trước. -->
+          <div class="pdf-inline-toolbar" id="pdf-inline-toolbar" hidden>
+            <button type="button" class="sketch-tool" id="pdf-prev" title="Trang trước">‹</button>
+            <span id="pdf-page-indicator">Trang 1/1</span>
+            <button type="button" class="sketch-tool" id="pdf-next" title="Trang sau">›</button>
+            <span class="sketch-sep"></span>
+            <button type="button" class="sketch-tool" id="pdf-zoom-out" title="Thu nhỏ">−</button>
+            <span id="pdf-zoom-indicator">100%</span>
+            <button type="button" class="sketch-tool" id="pdf-zoom-in" title="Phóng to">+</button>
+          </div>
+          <!-- Phóng to / thu nhỏ trang soạn thảo Chương (giống thanh zoom của File PDF) — ghichu_soanthao.js docZoom -->
+          <div class="pdf-inline-toolbar" id="doc-zoom-toolbar" hidden>
+            <button type="button" class="sketch-tool" id="doc-zoom-out" title="Thu nhỏ">−</button>
+            <button type="button" class="doc-zoom-indicator" id="doc-zoom-indicator" title="Về 100%">100%</button>
+            <button type="button" class="sketch-tool" id="doc-zoom-in" title="Phóng to">+</button>
+          </div>
+          <div class="find-box" id="find-box" hidden>
+            <input type="text" class="find-input" id="find-input" placeholder="Tìm trong nội dung" autocomplete="off">
+            <button type="button" class="icon-btn-flat" id="find-prev" title="Trước">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"></path></svg>
+            </button>
+            <button type="button" class="icon-btn-flat" id="find-next" title="Tiếp">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+            </button>
+          </div>
+          <button type="button" class="icon-btn" id="btn-find-toggle" title="Tìm trong nội dung">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Chia sẻ: "Chỉ xem · X đã chia sẻ với bạn" / "Sửa lần cuối…" / xung đột khi cùng sửa — js/ghichu_chiase.js -->
+      <div class="share-bar" id="share-bar" hidden></div>
+      <div class="editor-scroll" id="editor-scroll">
+        <div class="editor-shell">
+          <div id="print-title"><p class="p-subject" id="print-subject"></p><p class="p-chapter" id="print-chapter"></p></div>
+          <div id="ck-host"></div>
+          <div class="editor-empty" id="editor-empty">
+            <img class="editor-empty-icon" src="../assets/icon-notebook-rong.svg" alt="">
+            <div class="editor-empty-text">Chọn một chương hoặc File PDF ở cột Notebooks để bắt đầu, hoặc bấm dấu cộng để tạo môn học đầu tiên.</div>
+          </div>
+        </div>
+        <!-- Khung xem/chú thích PDF (MODULE 1 — ghichu_soanthao.js) nạp từ
+             html/ghichu_soanthao.frag qua fetch(), xem đầu ghichu.js. Đuôi ".frag" (không
+             phải ".html") để tránh bị các server dev tự động chèn/làm hỏng nội dung khi
+             fetch() (Live Server...) — xem giải thích chi tiết đầu ghichu.js. -->
+        <div id="mount-soanthao-pdfhost"></div>
+      </div>
+
+      <!-- Studio AI — Hỏi đáp tri thức (UC-19/UC-20): thay thế phần Notebook (editor-head +
+           editor-scroll ở trên) khi đang ở chế độ chat — xem khối "Studio AI — Hỏi đáp tri
+           thức" trong js/ghichu.js. Khi đã đăng nhập: lưu thật + Gemini + RAG (xem CLAUDE.md,
+           lộ trình RAG Bước 1→5); chưa đăng nhập: "chế độ mẫu" cục bộ. -->
+      <div class="chat-pane" id="chat-pane" hidden>
+        <div class="chat-pane-head">
+          <button type="button" class="chat-back-btn" id="chat-back-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"></path></svg>
+            Quay lại Notebook
+          </button>
+          <!-- Chỉ hiện khi cột Studio (danh sách "Đoạn chat mới"/"Gần đây") đang bị ẩn
+               (bấm nút X ở studio-head) trong lúc đang ở chế độ chat — bấm lại để mở cột
+               Studio ra, xem syncChatReopenStudioBtn() trong js/ghichu.js. -->
+          <button type="button" class="chat-reopen-studio-btn" id="chat-reopen-studio-btn" title="Hiện lại Studio" hidden>
+            <img src="../assets/icon-notebook-rong.svg" alt="">
+          </button>
+        </div>
+        <div class="chat-pane-scroll" id="chat-pane-scroll"></div>
+        <div class="chat-pane-inputbar" id="chat-pane-inputbar" hidden>
+          <!-- Hạn mức Hỏi đáp theo cuộc hội thoại (renderChatLimit() ở js/ghichu.js): dòng "Còn x / y lượt" khi sắp
+               hết, hết lượt thì thay ô nhập bằng thông báo + nút "Tạo cuộc hội thoại mới". -->
+          <div class="chat-limit" id="chat-limit" hidden></div>
+          <div class="chat-composer" id="chat-composer-bottom">
+            <!-- UC-19: chip ngữ cảnh đã đính kèm (@Chương / kéo-thả giữ Shift / tệp tải
+                 lên) — renderChatChips() trong js/ghichu_chat_dinhkem.js. -->
+            <div class="chat-chips" id="chat-chips-bottom"></div>
+            <div class="chat-pill" id="chat-pill-bottom">
+              <!-- Menu "+" (js/ghichu.js openPlusMenu): tải tệp/ảnh + giới hạn phạm vi tìm kiếm (Bước 5, UC-19). -->
+              <button type="button" class="chat-pill-plus" id="chat-plus-bottom" title="Đính kèm tệp hoặc giới hạn phạm vi">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+              </button>
+              <input type="text" id="chat-input-bottom" class="chat-pill-input" placeholder="Hỏi bất kỳ điều gì" autocomplete="off">
+              <!-- Đang chờ AI trả lời: micro đổi thành nút dừng (js/ghichu.js stopChat). -->
+              <button type="button" class="chat-stop" id="chat-stop-bottom" title="Đang suy luận… Bấm để dừng" aria-label="Dừng tạo câu trả lời" hidden><span></span></button>
+              <svg class="chat-pill-icon" id="chat-mic-bottom" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Studio AI — Tạo câu hỏi ôn tập (UC-21): MODULE riêng nạp từ html/ghichu_ontap.frag
+           qua fetch() (xem đầu ghichu.js), logic js/ghichu_ontap.js, style css/ghichu_ontap.css.
+           Khi mở chỉ còn cột giữa này (cột Notebooks + cột Studio + Topbar đều ẩn). -->
+      <div id="mount-ontap-pane"></div>
+
+      <!-- Studio AI — Tạo đề thi thử (UC-22): MODULE riêng nạp từ html/ghichu_thithu.frag, logic
+           js/ghichu_thithu.js, style css/ghichu_thithu.css (giao diện tham chiếu desktop-6-thi-thu.html).
+           Khi mở chỉ còn cột giữa này (cột Notebooks + cột Studio + Topbar đều ẩn). -->
+      <div id="mount-thithu-pane"></div>
+
+      <!-- Studio AI — Tạo Flashcard (UC-23): MODULE riêng nạp từ html/ghichu_flashcard.frag, logic
+           js/ghichu_flashcard.js, style css/ghichu_flashcard.css (giao diện mẫu `flashcard mới.html`).
+           Khi mở chỉ còn cột giữa này (cột Notebooks + cột Studio + Topbar đều ẩn). -->
+      <div id="mount-flashcard-pane"></div>
+
+      <!-- Studio AI — Tạo sơ đồ tư duy (UC-25): MODULE riêng nạp từ html/ghichu_mindmap.frag, logic
+           js/ghichu_mindmap.js, style css/ghichu_mindmap.css (giao diện mẫu `so-do-tu-duy.html`).
+           Khi mở chỉ còn cột giữa này (cột Notebooks + cột Studio + Topbar đều ẩn). -->
+      <div id="mount-mindmap-pane"></div>
+
+      <!-- Studio AI — Tạo bản tóm tắt (UC-24): MODULE riêng nạp từ html/ghichu_tomtat.frag, logic
+           js/ghichu_tomtat.js, style css/ghichu_tomtat.css (giao diện mẫu `tom-tat.html`).
+           Khi mở chỉ còn cột giữa này (cột Notebooks + cột Studio + Topbar đều ẩn). -->
+      <div id="mount-tomtat-pane"></div>
+
+      <!-- Lịch biểu (UC-26/27/28 + chuông UC-31): MODULE riêng nạp từ html/ghichu_lichbieu.frag, logic
+           js/ghichu_lichbieu.js, style css/ghichu_lichbieu.css (giao diện mẫu `lich-bieu.html`).
+           Khi mở chỉ còn cột giữa này (cột Notebooks + cột Studio + Topbar đều ẩn). -->
+      <div id="mount-lichbieu-pane"></div>
+      <!-- UC-29/30 Thống kê hiệu suất + Nhận xét AI — module riêng: html/ghichu_thongke.frag, js/ghichu_thongke.js,
+           style css/ghichu_thongke.css (giao diện mẫu `thong-ke.html`, giữ thanh trái của mẫu). -->
+      <div id="mount-thongke-pane"></div>
+      <!-- UC-33 Dọn dung lượng (phía người học khi chạm hạn mức) — module riêng: html/ghichu_hanmuc.frag,
+           js/ghichu_hanmuc.js, css/ghichu_hanmuc.css (mẫu `han-muc-nguoi-hoc.html`). Thanh Dung lượng + dải nhắc +
+           số lượt trên thẻ Studio do cùng module chèn vào cột Notebook / cột Studio. -->
+      <div id="mount-hanmuc-pane"></div>
+    </main>
+
+    <aside class="studio" id="studio" hidden>
+      <div class="studio-head" id="studio-head">
+        <span class="eyebrow" id="studio-head-default" style="color:var(--muted-2)">Studio</span>
+        <span class="studio-head-chat-title" id="studio-head-chat" hidden>Hỏi đáp tri thức</span>
+        <button type="button" class="icon-btn-sm" id="btn-studio-close" title="Ẩn Studio">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <div class="studio-body">
+        <div class="studio-default" id="studio-default">
+          <button type="button" class="studio-card lead" id="studio-card-hoidap" style="background:#eef3fd">
+            <span class="studio-card-icon">💬</span>
+            <span class="studio-card-label">Hỏi đáp tri thức</span>
+          </button>
+
+          <div class="studio-group">
+            <h3>Tạo bộ câu hỏi</h3>
+            <div class="studio-grid">
+              <button type="button" class="studio-card" id="studio-card-ontap" style="background:#fdf6d8"><span class="studio-card-icon">📖</span><span class="studio-card-label">Ôn tập</span></button>
+              <button type="button" class="studio-card" id="studio-card-thithu" style="background:#fdeaf0"><span class="studio-card-icon">✏️</span><span class="studio-card-label">Thi thử</span></button>
+            </div>
+          </div>
+
+          <div class="studio-group">
+            <h3>Theo chương</h3>
+            <div class="studio-grid">
+              <button type="button" class="studio-card" id="studio-card-flashcard" style="background:#f6eeff"><span class="studio-card-icon">🎴</span><span class="studio-card-label">Tạo Flashcard</span></button>
+              <button type="button" class="studio-card" id="studio-card-tomtat" style="background:#e9f8ee"><span class="studio-card-icon">📋</span><span class="studio-card-label">Tạo bản tóm tắt</span></button>
+              <button type="button" class="studio-card" id="studio-card-mindmap" style="background:#fdefe0"><span class="studio-card-icon">📚</span><span class="studio-card-label">Tạo sơ đồ tư duy</span></button>
+            </div>
+          </div>
+
+          <div class="studio-group">
+            <h3>Theo dõi</h3>
+            <div class="studio-grid">
+              <button type="button" class="studio-card" id="studio-card-lichbieu" style="background:#e6f9f7"><span class="studio-card-icon">📅</span><span class="studio-card-label">Lịch học</span></button>
+              <button type="button" class="studio-card" id="studio-card-thongke" style="background:#eeeefc"><span class="studio-card-icon">📊</span><span class="studio-card-label">Thống kê hiệu suất</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chế độ "Hỏi đáp tri thức": danh sách phiên chat (thay cho lưới thẻ ở trên) —
+             xem renderChatDock()/khối "Studio AI — Hỏi đáp tri thức" trong js/ghichu.js. -->
+        <div class="studio-chat-list" id="studio-chat-list" hidden>
+          <button type="button" class="studio-chat-new" id="studio-chat-new">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16z"></path><path d="M14 6l4 4"></path></svg>
+            Đoạn chat mới
+          </button>
+          <div class="studio-chat-recent-label">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="4" rx="1"></rect><path d="M5 9v9a1 1 0 001 1h12a1 1 0 001-1V9M10 13h4"></path></svg>
+            Gần đây
+          </div>
+          <div class="studio-chat-recent" id="studio-chat-recent"></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Responsive: nền mờ phía sau ngăn kéo Notebook / Studio trên màn hẹp; bấm vào = đóng -->
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <div class="ctx-menu" id="ctx-menu" hidden></div>
+  <div class="dd-panel" id="dd-panel" hidden></div>
+  <div class="ctx-menu account-menu" id="account-menu" hidden></div>
+
+  <!-- Modal MODULE 3 (Vẽ phác thảo / Hướng dẫn / Phím tắt) nạp từ html/ghichu_chucnangcacthe.frag
+       qua fetch(), xem đầu ghichu.js. -->
+  <div id="mount-chucnangcacthe-modals"></div>
+
+  <!-- Modal MODULE 2 (Hồ sơ cá nhân / Cài đặt tài khoản) nạp từ html/ghichu_giaodien.frag qua
+       fetch(), xem đầu ghichu.js. -->
+  <div id="mount-giaodien-modals"></div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-client.js"></script>
+<script type="module" src="../js/ghichu.js"></script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+/* ======================================================================
+   ghichu.css — nền dùng CHUNG cho 3 module (biến màu sáng/tối, reset, khung
+   layout chính: topbar/ribbon/editor-pane/studio, và các khối UI nổi dùng
+   chung: dropdown/context-menu/modal). Từng module (ghichu_soanthao.css,
+   ghichu_giaodien.css, ghichu_chucnangcacthe.css) chỉ còn phần diện mạo
+   RIÊNG của mình, đọc lại các biến --ink/--panel/--border... khai báo ở
+   đây. Studio AI giữ ở đây cùng phần lõi dùng chung (không thuộc hẳn 1
+   trong 3 module — xem ghi chú ở ghichu_core.js).
+   ====================================================================== */
+:root{
+  --bg:#eaf1fb;
+  --panel:#ffffff;
+  --soft:#f4f6fa;
+  --border:#e6eaf2;
+  --border-soft:#dfe4ec;
+  --border-strip:#dbe5f5;
+  --ink:#0b1220;
+  --ink-strong:#050d2b;
+  --muted:#5a6479;
+  --muted-2:#8b93a5;
+  --muted-3:#a7b0c0;
+  --hover:#eef1f7;
+  --hover-strong:#e9edf5;
+  --accent:#0d6efd;
+  --accent-dark:#0a58ca;
+  --accent-darker:#0b5ed7;
+  --accent-tint:#eaf2ff;
+  --danger:#e03131;
+  --danger-tint:#fff5f5;
+  --active-tint:#e7edf9;
+  --active-line:#7aa5e8;
+}
+/* ---------- giao diện Tối (UC-09) ---------- */
+/* Áp dụng qua thuộc tính data-theme trên <html> — xem applyTheme() trong ghichu_giaodien.js.
+   "system" được JS tính sẵn thành "light"/"dark" cụ thể trước khi gán attribute (theo kết
+   quả matchMedia), nên chỉ cần đúng 2 giá trị CSS ở đây, không cần thêm khối @media riêng
+   cho prefers-color-scheme. */
+:root[data-theme="dark"]{
+  --bg:#0e1420;
+  --panel:#161d2c;
+  --soft:#1d2536;
+  --border:#26304a;
+  --border-soft:#2c3752;
+  --border-strip:#26304a;
+  --ink:#cbd3e6;
+  --ink-strong:#f1f4fb;
+  --muted:#8f9ab4;
+  --muted-2:#6f7996;
+  --muted-3:#5b6480;
+  --hover:#212a3f;
+  --hover-strong:#262f47;
+  --accent:#5b9bff;
+  --accent-dark:#3d7fe0;
+  --accent-darker:#4a8ef2;
+  --accent-tint:#17233c;
+  --danger:#ff6b6b;
+  --danger-tint:#2a1620;
+  --active-tint:#16223a;
+  --active-line:#3f6fb0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Figtree,system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+img{max-width:100%}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#cfd6e4;border-radius:9px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes td-marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+/* ---------- layout shell ---------- */
+.app{height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.workspace{flex:1;min-height:0;display:grid;gap:14px;padding:14px 16px;background:var(--bg);
+  grid-template-columns:clamp(196px,20%,272px) minmax(0,1fr)}   /* mặc định trước khi JS đặt cột (updateWorkspaceCols) */
+/* Đang khởi động (class do <head> ghichu.html gắn, init() gỡ): che khung dở dang, hiện vòng xoay giữa màn */
+html.app-booting .app{visibility:hidden}
+html.app-booting body::after{content:"";position:fixed;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;
+  border:3px solid var(--border-soft,#d7dde8);border-top-color:var(--accent,#0d6efd);border-radius:50%;animation:td-boot-spin .8s linear infinite}
+@keyframes td-boot-spin{to{transform:rotate(360deg)}}
+/* Công cụ Studio chiếm trọn màn hình (Ôn tập, Thi thử, Flashcard, Sơ đồ, Tóm tắt, Lịch biểu, Thống kê): cột giữa
+   kín màn, không còn lề nền xanh nhạt và khung bo góc bao ngoài — xem updateWorkspaceCols() trong ghichu.js */
+.workspace.workspace--full{padding:0;gap:0}
+.workspace--full > .editor-pane{border:0;border-radius:0}
+
+/* ---------- topbar: tab strip ---------- */
+.topbar{flex:0 0 auto;background:var(--bg);border-bottom:1px solid var(--border-strip)}
+.topbar[hidden]{display:none} /* ẩn khi ở chế độ Studio AI — xem updateWorkspaceCols() trong ghichu.js */
+/* hàng tab cao 44px: logo, chữ tab và các nút căn giữa theo chiều cao; tab cao hết hàng để gạch chân tab đang chọn sát mép dưới */
+.tabstrip{display:flex;align-items:center;gap:2px;height:44px;padding:0 14px;overflow-x:auto}
+.brand{flex:0 0 auto;width:26px;height:26px;margin-right:8px;border-radius:8px;background:#0b1220;color:#fff;display:grid;place-items:center;font-weight:700;font-style:italic;font-size:11px;letter-spacing:.04em}
+.tabs{display:flex;align-items:stretch;align-self:stretch;gap:2px}
+.tab-btn{flex:0 0 auto;position:relative;height:100%;padding:0 12px;background:none;border:0;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--muted);border-top:2.5px solid transparent;border-bottom:2.5px solid transparent}
+.tab-btn.active{font-weight:600;color:var(--ink);border-bottom-color:var(--accent)}
+.topbar-actions{margin-left:auto;flex:0 0 auto;display:flex;align-items:center;gap:8px}
+.btn-chip{height:30px;padding:0 12px;display:flex;align-items:center;gap:7px;background:var(--panel);color:var(--ink);border:1.5px solid var(--border-soft);border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn-chip:hover{background:#f5f7fb}
+.btn-chip--studio{background:var(--accent);color:#fff;border:0}
+.btn-chip--studio.is-open{background:#0b1220}
+
+/* ---------- chuông thông báo topbar (js/ghichu_thongbao.js) — panel gắn vào body, dùng lại khối .lb-notif / .lb-ni
+   của ghichu_lichbieu.css nên khai lại các token --lb-* (vốn chỉ có trong .lb-pane) + reset nút ---------- */
+.btn-noti{position:relative;width:30px;height:30px;display:grid;place-items:center;background:var(--panel);color:var(--ink);border:1.5px solid var(--border-soft);border-radius:50%;cursor:pointer}
+.btn-noti:hover,.btn-noti.on{background:var(--hover)}
+.btn-noti.ring svg{animation:lb-ring 1s ease-in-out 2;transform-origin:50% 8%}
+.btn-noti i{position:absolute;right:-5px;top:-5px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--danger);color:#fff;font-style:normal;font-size:10px;font-weight:700;line-height:16px;text-align:center;border:1.5px solid var(--bg)}
+.btn-noti i[hidden]{display:none}
+.lb-notif.noti-panel{
+  --lb-primary:var(--ink-strong);--lb-on-primary:var(--panel);--lb-soft:#edf1f7;
+  --lb-warn-bg:#fdf3dc;--lb-warn-line:#ecd3a4;--lb-warn:#8a5a07;
+  position:fixed;top:48px;right:12px;width:min(380px,calc(100vw - 24px));max-height:min(560px,calc(100vh - 70px));font-size:13.5px;color:var(--ink);z-index:90
+}
+:root[data-theme="dark"] .lb-notif.noti-panel{--lb-soft:#1d2640;--lb-warn-bg:#2d2412;--lb-warn-line:#5c4718;--lb-warn:#f0c46a}
+.lb-notif.noti-panel[hidden]{display:none}
+.noti-panel :where(button){font-family:inherit;font-size:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+.lb-notif.noti-panel .nh{padding:11px 16px}
+.noti-panel .lb-ni{padding:9px 16px 9px 30px !important}
+.noti-panel .lb-ni.unread::before{left:14px;top:19px}
+.noti-panel .lb-ni.has-ic{padding-left:58px !important}
+.noti-panel .lb-ni.has-ic.unread::before{left:12px;top:22px}
+.noti-panel .lb-ni small{font-size:12px}
+.lb-ni-ic{position:absolute;left:24px;top:10px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:var(--hover-strong);color:var(--ink-strong)}
+.lb-ni-ic.k-flashcard{background:#e3f4ea;color:#2e7d4f}
+.lb-ni-ic.k-exam{background:#fdecea;color:#b83d38}
+.lb-ni-ic.k-practice{background:#fdf3dc;color:#8a5a07}
+:root[data-theme="dark"] .lb-ni-ic.k-flashcard{background:#173023;color:#7fd3a0}
+:root[data-theme="dark"] .lb-ni-ic.k-exam{background:#2c1719;color:#f07b76}
+:root[data-theme="dark"] .lb-ni-ic.k-practice{background:#2d2412;color:#f0c46a}
+.lb-notif.noti-panel .nf{font-size:12.5px;padding:9px 16px}
+.noti-panel .lb-nempty{padding:14px 16px}
+.noti-panel .lb-btn-primary.sm{height:30px;padding:0 14px !important;font-size:13px}
+.noti-open-lb{align-self:flex-start;margin-top:2px;color:var(--accent) !important;font-weight:600}
+.noti-open-lb:hover{text-decoration:underline}
+
+/* ---------- ribbon: khung + khối nút dùng chung (nội dung từng thẻ do module tương ứng dựng) ---------- */
+.ribbon{display:flex;align-items:center;gap:4px;padding:8px 14px;background:var(--panel);border-top:1px solid var(--border-strip);overflow-x:auto}
+.ribbon-empty{font-size:12.5px;color:var(--muted-3);padding:4px 2px}
+.ribbon-btn-wrap{flex:0 0 auto;display:flex;align-items:center}
+.ribbon-btn-caret{width:16px;height:32px;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--muted-3);font-size:9px}
+.ribbon-btn-caret:hover{background:var(--hover)}
+.ribbon-btn-caret:disabled{opacity:.4;cursor:not-allowed}
+.ribbon-group{flex:0 0 auto;display:flex;align-items:center;gap:3px;padding-right:8px;border-right:1px solid var(--border);margin-right:4px}
+.ribbon-group:last-child{border-right:0;margin-right:0}
+.ribbon-btn{flex:0 0 auto;height:32px;padding:0 10px;display:flex;align-items:center;gap:7px;background:transparent;border:0;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink);white-space:nowrap}
+.ribbon-btn:hover:not(:disabled){background:var(--hover)}
+.ribbon-btn:disabled{opacity:.4;cursor:not-allowed}
+.ribbon-btn .glyph{font-size:13px}
+.ribbon-btn.on{background:var(--active-tint);color:var(--accent);font-weight:600}
+
+/* ---------- icon-btn-sm: nút tròn nhỏ dùng ở nhiều nơi (thêm Môn, đóng modal, đóng Studio) ---------- */
+.icon-btn-sm{width:26px;height:26px;display:grid;place-items:center;background:var(--soft);border:0;border-radius:7px;cursor:pointer;color:var(--ink-strong)}
+.icon-btn-sm:hover{background:var(--hover-strong)}
+.icon-btn-sm:disabled{opacity:.4;cursor:not-allowed}
+.icon-btn-sm:disabled:hover{background:var(--soft)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-strong)}
+
+/* ---------- avatar-badge: dùng ở sidebar (soạn thảo), popover tài khoản + hồ sơ (giao diện) ---------- */
+.avatar-badge{width:28px;height:28px;border-radius:50%;background:var(--accent-tint);color:var(--accent);display:grid;place-items:center;font-size:12px;font-weight:700;flex:0 0 auto;border:0;padding:0;cursor:pointer;font-family:inherit}
+.avatar-badge:hover{filter:brightness(.95)}
+.avatar-badge.on{box-shadow:0 0 0 2px var(--active-line)}
+.avatar-badge--lg{width:36px;height:36px;font-size:14px}
+.avatar-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* ---------- editor-pane: khung chứa nội dung đang mở (Chương hoặc File PDF) ---------- */
+.editor-pane{min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.editor-head{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:12px 18px;border-bottom:1px solid var(--border);overflow:hidden}
+.crumb-subject{font-size:13px;color:var(--ink-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb-sep{font-size:13px;color:#c2cad9}
+.crumb-chapter{font-size:13px;color:var(--muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb-chapter.on{font-weight:600;color:var(--ink-strong)}
+.status-pill{margin-left:10px;font-size:11.5px;color:var(--muted-2);white-space:nowrap}
+.status-pill.saving{color:var(--accent)}
+.status-pill.editing{color:var(--muted)}
+.editor-head-actions{margin-left:auto;flex:0 0 auto;display:flex;align-items:center;gap:6px}
+
+.editor-scroll{flex:1;min-height:0;overflow:auto;padding:30px clamp(18px,4vw,56px) 60px}
+.editor-shell{max-width:720px;margin:0 auto;position:relative;min-height:60vh}
+#ck-host{min-height:60vh}
+.editor-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:18px;font-size:14px;line-height:1.6;color:var(--muted-3);text-align:center}
+.editor-empty-icon{width:64px;height:auto;opacity:.55}
+:root[data-theme="dark"] .editor-empty-icon{filter:invert(1) brightness(1.6)}
+.editor-empty-text{max-width:360px}
+/* các phần tử dưới đây được bật/tắt qua thuộc tính [hidden] trong JS, nhưng lớp CSS riêng của
+   chúng (ở ghichu_soanthao.css/ghichu_chucnangcacthe.css) đặt sẵn display:flex — attribute
+   selector này cần specificity cao hơn để [hidden] thật sự thắng, nếu không phần tử vẫn hiện
+   & chặn click dù đã "ẩn". */
+.editor-head[hidden],.editor-scroll[hidden],.editor-empty[hidden],.studio[hidden],.sidebar[hidden],.search-marquee[hidden],.pdf-inline-toolbar[hidden],.chat-reopen-studio-btn[hidden]{display:none}
+
+/* ---------- Studio (cột 3 — dựa theo mẫu studio-panel.html: thẻ dẫn "Hỏi đáp tri
+   thức" + các nhóm thẻ theo UC-19->31, xem .claude/rules/08-ai-studio.md +
+   09-schedule-stats.md; chỉ giao diện tĩnh, chưa gắn logic AI/lịch/thống kê thật.
+   Kích thước đã thu nhỏ so với mẫu gốc (mẫu dùng gap/padding lớn cho ảnh chụp demo
+   340px, không vừa chiều cao cột thật) để toàn bộ nội dung vừa trong 1 màn hình,
+   không phát sinh thanh cuộn dọc ở .studio-body. ---------- */
+.studio{min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.studio-head{flex:0 0 auto;padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between}
+/* Đầu cột Studio lúc mở Hỏi đáp: CÙNG chiều cao với .chat-pane-head để 2 dòng kẻ thẳng hàng */
+.studio-head--chat{height:60px;box-sizing:border-box;padding-top:0;padding-bottom:0;border-bottom:1px solid var(--border)}
+.studio-body{flex:1;min-height:0;overflow:auto;padding:0 12px 12px}
+.studio-card{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border:0;border-radius:10px;cursor:pointer;text-align:left;font-family:inherit}
+.studio-card:hover{filter:brightness(.97)}
+.studio-card.lead{width:100%;padding:9px 12px}
+.studio-card-icon{font-size:14px}
+.studio-card.lead .studio-card-icon{font-size:15px}
+.studio-card-label{font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.studio-card.lead .studio-card-label{font-size:12px}
+.studio-group{margin-top:10px}
+.studio-group h3{margin:0 0 5px;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2)}
+.studio-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+
+/* ---------- Studio AI — Hỏi đáp tri thức (UC-19/UC-20): chế độ chat của cột Studio
+   (danh sách phiên) + cột giữa (khung hội thoại), thay cho lưới thẻ/Notebook khi đang mở
+   một cuộc hỏi đáp — xem khối "Studio AI — Hỏi đáp tri thức" trong js/ghichu.js. ---------- */
+.studio-head-chat-title{flex:1;text-align:center;padding-left:26px;font-size:19px;font-weight:600;color:var(--ink-strong)}
+.studio-chat-new{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;margin-top:12px;background:none;border:0;border-radius:9px;cursor:pointer;text-align:left;font-family:inherit;font-size:13px;color:var(--ink)}
+.studio-chat-new:hover{background:var(--hover)}
+.studio-chat-recent-label{display:flex;align-items:center;gap:10px;padding:8px 10px;font-size:13px;color:var(--muted)}
+.studio-chat-item{display:flex;align-items:center;gap:6px;margin-left:16px;border-radius:9px}
+.studio-chat-item:hover{background:var(--hover)}
+.studio-chat-item-open{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:6px 10px;background:none;border:0;cursor:pointer;text-align:left;font-family:inherit;font-size:13px;color:var(--muted-2)}
+.studio-chat-item-open.active{color:var(--accent);font-weight:600}
+.studio-chat-item-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.studio-chat-item-menu{flex:0 0 auto;width:24px;height:24px;margin-right:4px;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--muted-3)}
+.studio-chat-item-menu:hover{background:var(--hover-strong)}
+.studio-chat-item-rename{flex:1;min-width:0;height:30px;margin:2px 4px;padding:0 8px;border:1.5px solid var(--accent);border-radius:8px;font-family:inherit;font-size:13px;color:var(--ink);outline:none;background:var(--panel)}
+
+.chat-pane{min-height:0;flex:1;display:flex;flex-direction:column}
+.chat-pane[hidden]{display:none}
+.chat-pane-head{flex:0 0 auto;display:flex;align-items:center;height:60px;box-sizing:border-box;padding:0 18px;border-bottom:1px solid var(--border)}
+.chat-back-btn{display:flex;align-items:center;gap:7px;padding:5px 9px 5px 6px;background:none;border:0;border-radius:8px;cursor:pointer;font-family:inherit;font-size:18px;color:var(--muted)}
+.chat-back-btn svg{width:16px;height:16px}
+.chat-back-btn:hover{background:var(--hover)}
+.chat-reopen-studio-btn{margin-left:auto;flex:0 0 auto;width:46px;height:46px;display:grid;place-items:center;background:none;border:0;border-radius:8px;cursor:pointer}
+.chat-reopen-studio-btn:hover{background:var(--hover)}
+.chat-reopen-studio-btn img{width:34px;height:34px;opacity:.7}
+:root[data-theme="dark"] .chat-reopen-studio-btn img{filter:invert(1) brightness(1.6)}
+/* Bước 5 lộ trình RAG (UC-19) — menu nút "+" ở ô nhập, menu chọn phạm vi (tái dùng khung
+   .dd-panel/.dd-plain chung, thụt lề dòng Chương/PDF dưới Môn cha) và chip phạm vi (chỉ hiện
+   khi đã giới hạn, đứng đầu hàng .chat-chips, viền màu accent để khác chip đính kèm). */
+.chat-plus-menu{min-width:230px}
+.chat-plus-menu button{gap:8px}
+.chat-chip.chat-chip--scope{cursor:pointer;border-color:var(--accent);color:var(--accent)}
+.chat-scope-menu{min-width:260px;max-width:360px;max-height:340px;overflow:auto}
+.chat-scope-menu button{gap:7px;flex:0 0 auto}
+.chat-scope-menu button span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.chat-scope-row--subject{font-weight:600}
+.chat-scope-row--child{padding-left:26px!important}
+.chat-scope-head{padding:6px 10px 2px;font-size:11px;color:var(--muted-3)}
+.chat-pane-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;padding:24px clamp(16px,4vw,40px) 22px}
+.chat-pane-scroll--empty{justify-content:center}
+.chat-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:22px;transform:translateY(-10px)} /* nâng cả khối (hình SVG, tiêu đề, ô nhập) lên 10px so với tâm */
+.chat-empty-icon{width:70px;height:auto;opacity:.85}
+:root[data-theme="dark"] .chat-empty-icon{filter:invert(1) brightness(1.6)}
+.chat-empty-title{font-family:inherit;font-size:20px;font-weight:600;color:var(--muted);letter-spacing:-.01em}
+.chat-empty .chat-composer{width:min(560px,100%)}
+.chat-thread{display:flex;flex-direction:column;gap:18px;max-width:720px;width:100%;margin:0 auto}
+.chat-msg{display:flex}
+.chat-msg.user{justify-content:flex-end}
+.chat-msg.bot{justify-content:flex-start}
+.chat-bubble{font-size:16px;line-height:1.6;color:var(--ink);white-space:pre-line}
+/* User: bong bóng nền bo tròn -> giới hạn 76% để không kéo dài hết hàng như 1 đoạn văn.
+   Bot: chữ thường không nền -> chiếm trọn chiều rộng .chat-thread; nội dung Markdown dựng thành HTML
+   (chatMarkdown() ở ghichu.js) và CĂN ĐỀU 2 LỀ (người dùng chốt) — đoạn văn, mục danh sách. */
+.chat-bubble.user{max-width:76%;padding:8px 16px;background:var(--soft);border-radius:16px}
+.chat-bubble.bot{width:100%;white-space:normal}
+.chat-md{text-align:justify;text-justify:inter-word;hyphens:none}
+.chat-md p{margin:0 0 10px}
+.chat-md p:last-child,.chat-md ul:last-child,.chat-md ol:last-child{margin-bottom:0}
+.chat-md .chat-md-h{font-size:17px;font-weight:700;margin:14px 0 6px;text-align:left}
+.chat-md .chat-md-h:first-child{margin-top:0}
+.chat-md ul,.chat-md ol{margin:4px 0 12px;padding-left:24px}
+.chat-md ul ul,.chat-md ol ol,.chat-md ul ol,.chat-md ol ul{margin:4px 0 2px}
+.chat-md li{margin:0 0 6px;padding-left:2px}
+.chat-md li::marker{color:var(--ink)}
+.chat-md strong{font-weight:700}
+.chat-md code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;background:var(--soft);padding:1px 5px;border-radius:4px}
+/* UC-20 luồng 5a — trích dẫn nguồn (BR-09) dưới câu trả lời AI; bấm để mở Chương/PDF (ghichu.js openCitation). */
+.chat-cites{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;white-space:normal}
+.chat-cites-title{font-size:12px;font-weight:600;color:var(--muted-2);margin-right:2px}
+/* Danh sách nguồn (citesHtml): cột số "(n)" cố định + tên nguồn căn đều 2 lề, số trang ở dòng dưới; số "(n)" trong
+   câu trả lời (linkCiteRefs) bấm được, cùng handler .chat-cite. Ghi đè kiểu viên thuốc cũ của .chat-cite. */
+.chat-bubble.bot .chat-cites{display:flex;flex-direction:column;align-items:stretch;gap:2px;margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}
+.chat-bubble.bot .chat-cites-title{font-size:13px;font-weight:700;color:var(--ink-strong);margin:0 0 4px;padding-left:8px}
+.chat-cite.chat-src{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:baseline;line-height:1.5;width:100%;max-width:none;padding:6px 8px;border:0;border-radius:8px;background:none;font-size:14px;color:var(--ink);text-align:justify;white-space:normal;overflow:visible}
+.chat-cite.chat-src:hover{background:var(--accent-tint);color:var(--accent-dark)}
+.chat-src-num{font-size:14px;line-height:1.5;font-weight:700;color:var(--accent);text-align:left}
+.chat-src-body{display:flex;flex-direction:column;gap:2px;text-align:justify}
+.chat-src-name{font-size:14px;line-height:1.5;font-weight:600}
+.chat-src-page{font-size:12px;line-height:1.4;color:var(--muted)}
+.chat-cite.chat-ref{display:inline;padding:0 2px;margin:0 1px;border:0;border-radius:4px;background:none;font:inherit;font-size:.82em;font-weight:700;color:var(--accent);vertical-align:baseline;white-space:nowrap;overflow:visible;cursor:pointer}
+.chat-cite.chat-ref:hover{background:var(--accent-tint);color:var(--accent-dark)}
+.chat-cite{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:3px 10px 3px 4px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-family:inherit;font-size:12.5px;color:var(--muted);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-cite:hover{background:var(--accent-tint);border-color:var(--active-line);color:var(--accent-dark)}
+.chat-cite-num{flex:0 0 auto;display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--accent-tint);color:var(--accent);font-size:11px;font-weight:600}
+.chat-pane-inputbar{flex:0 0 auto;padding:0 clamp(16px,4vw,40px) 26px}
+.chat-pane-inputbar[hidden]{display:none}
+/* Bôi vàng đoạn được trích dẫn khi bấm "Nguồn" — ghichu_soanthao.js applyChapterHighlight / drawPdfHighlight */
+::highlight(td-cite){background-color:#ffe066;color:inherit}
+.pdf-cite-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
+.pdf-cite-rect{position:absolute;background:rgba(255,214,0,.42);mix-blend-mode:multiply;border-radius:2px}
+/* Hạn mức Hỏi đáp theo cuộc hội thoại — renderChatLimit() ở ghichu.js */
+.chat-limit{max-width:720px;margin:0 auto 8px;font-size:12.5px;color:var(--muted);text-align:center}
+.chat-limit[hidden]{display:none}
+.chat-limit--full{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:0;padding:12px 18px;background:var(--panel);border:1.5px solid var(--muted-3);border-radius:14px;font-size:13.5px;color:var(--ink)}
+.chat-limit-new{height:32px;padding:0 16px;border:0;border-radius:999px;background:#1f5f99;color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.chat-limit-new:hover{filter:brightness(1.08)}
+.chat-pill{display:flex;align-items:center;gap:12px;max-width:720px;margin:0 auto;padding:10px 18px;background:var(--panel);border:1.5px solid var(--muted-3);border-radius:999px;box-shadow:0 2px 6px rgba(9,22,60,.05)}
+.chat-pill-icon{flex:0 0 auto;color:var(--muted)}
+/* "Đang suy luận" (js/ghichu.js chatThinkingHtml / stopChat): nút dừng thay micro + bong bóng chờ cuối hội thoại. */
+.chat-stop{flex:0 0 auto;width:34px;height:34px;margin:-4px -8px -4px 0;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:var(--accent);cursor:pointer;animation:chat-stop-pulse 1.6s ease-in-out infinite}
+.chat-stop[hidden]{display:none}
+.chat-stop span{width:11px;height:11px;border-radius:2.5px;background:#fff}
+.chat-stop:hover{background:var(--accent-darker)}
+@keyframes chat-stop-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 35%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 0%,transparent)}}
+.chat-thinking{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:var(--soft);font-size:14px;color:var(--muted)}
+.chat-thinking-dots{display:inline-flex;gap:4px}
+.chat-thinking-dots i{width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:.3;animation:chat-think-dot 1.2s ease-in-out infinite}
+.chat-thinking-dots i:nth-child(2){animation-delay:.2s}
+.chat-thinking-dots i:nth-child(3){animation-delay:.4s}
+@keyframes chat-think-dot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.chat-thinking-text{color:var(--ink)}
+.chat-thinking-time{font-size:12.5px;color:var(--muted-2)}
+@media (prefers-reduced-motion:reduce){.chat-stop,.chat-thinking-dots i{animation:none}.chat-thinking-dots i{opacity:.7}}
+.chat-pill-input{flex:1;min-width:0;height:28px;border:0;background:none;font-family:inherit;font-size:14px;color:var(--ink);outline:none}
+
+/* ---------- UC-19: đính kèm ngữ cảnh ở ô nhập AI Chat (@Chương / kéo-thả giữ Shift /
+   tệp-ảnh tải lên) — xem js/ghichu_chat_dinhkem.js. .chat-composer bọc ngoài .chat-pill
+   để chèn thêm hàng chip phía trên mà không đổi cách .chat-pill tự căn giữa/co giãn
+   (width vẫn do .chat-composer quyết định, .chat-pill chỉ giãn hết .chat-composer). ---------- */
+.chat-composer{max-width:720px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.chat-composer[hidden]{display:none}
+.chat-composer .chat-pill{width:100%;max-width:none;margin:0}
+.chat-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px}
+.chat-chips:empty{display:none}
+.chat-chip{display:inline-flex;align-items:center;gap:6px;max-width:230px;padding:4px 5px 4px 10px;background:var(--soft);border:1px solid var(--border);border-radius:999px;font-size:12.5px;color:var(--ink)}
+.chat-chip-ico{flex:0 0 auto;color:var(--muted)}
+.chat-chip-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-chip-x{flex:0 0 auto;width:18px;height:18px;display:grid;place-items:center;background:none;border:0;border-radius:50%;cursor:pointer;color:var(--muted-3);font-family:inherit;line-height:1}
+.chat-chip-x:hover{background:var(--hover-strong);color:var(--ink)}
+.chat-chip--pending{opacity:.55}
+.chat-pill-plus{flex:0 0 auto;width:26px;height:26px;display:grid;place-items:center;background:none;border:0;border-radius:50%;cursor:pointer;color:var(--muted)}
+.chat-pill-plus:hover{background:var(--hover-strong);color:var(--ink)}
+/* Kéo Chương từ cây Notebook + GIỮ SHIFT thả vào ô nhập — KHÔNG tái dùng .drop-target của
+   cây (class đó đổi border-top-color cho hàng chữ nhật, sai hình với pill bo tròn). */
+.chat-pill--droptarget{border-color:var(--accent);box-shadow:0 0 0 3px var(--active-tint)}
+/* Trong lúc đang kéo hợp lệ, "tắt" input/nút "+" khỏi việc nhận hit-test — nếu không, con
+   trỏ thả đúng lên <input> (chiếm phần lớn diện tích pill) khiến trình duyệt xử lý theo hành
+   vi "thả text" mặc định của ô nhập thay vì bắn sự kiện drop cho .chat-pill, drop coi như
+   không xảy ra dù đã preventDefault() ở dragover (xác nhận bằng trace trình duyệt thật). */
+.chat-pill--droptarget .chat-pill-input,
+.chat-pill--droptarget .chat-pill-plus,
+.chat-pill--droptarget .chat-pill-icon{pointer-events:none}
+.chat-bubble-atts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chat-bubble-atts .chat-chip{background:var(--panel)}
+/* Dropdown "@" — tái dùng khung .dd-panel/.dd-plain button (định nghĩa bên dưới). */
+.chat-mention{min-width:300px;max-height:264px;overflow:auto}
+.chat-mention-row{gap:8px;height:34px!important}
+.chat-mention-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-mention-sub{flex:0 0 auto;font-size:11px;color:var(--muted-3)}
+
+/* ---------- floating panels: dropdown (Home/Insert/PDF màu...) + context-menu (đổi tên/xoá,
+   popover tài khoản) — nội dung bên trong do module gọi tự dựng, khung/khối dùng chung ở đây ---------- */
+.dd-panel,.ctx-menu{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--border);border-radius:11px;box-shadow:0 16px 40px rgba(9,22,60,.16);padding:10px}
+.ctx-menu{z-index:40;min-width:172px;padding:6px;border-radius:11px}
+.ctx-menu-title{padding:6px 10px 8px;font-size:11px;color:var(--muted-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctx-menu-item{width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;background:none;border:0;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;color:var(--ink);font-family:inherit}
+.ctx-menu-item:hover{background:var(--soft)}
+.ctx-menu-item.danger{color:var(--danger)}
+.ctx-menu-item.danger:hover{background:var(--danger-tint)}
+.ctx-menu-sep{height:1px;background:var(--border);margin:6px 4px}
+.dd-plain{display:flex;flex-direction:column;gap:3px}
+.dd-plain button{height:30px;display:flex;align-items:center;padding:0 10px;background:var(--panel);border:0;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--ink);white-space:nowrap;text-align:left;font-family:inherit}
+.dd-plain button:hover{background:var(--hover)}
+.dd-plain button.on{background:var(--active-tint);color:var(--accent);font-weight:600}
+.dd-plain button:disabled{opacity:.4;cursor:not-allowed}
+.dd-plain button:disabled:hover{background:var(--panel)}
+.dd-color{display:flex;flex-direction:column;gap:8px}
+.dd-color-auto{display:flex;align-items:center;gap:9px;padding:7px 8px;background:var(--soft);border:0;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--ink-strong);font-family:inherit}
+.dd-color-auto:hover{background:var(--hover-strong)}
+.dd-color-swatch{width:17px;height:17px;border:1px solid #cfd6e4;border-radius:4px;flex:0 0 auto}
+.dd-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2)}
+.dd-color-row{display:flex;gap:3px}
+.dd-swatch{width:20px;height:20px;border:1px solid rgba(9,22,60,.14);border-radius:3px;cursor:pointer}
+.dd-swatch:hover{outline:2px solid var(--accent)}
+.dd-swatch.on{outline:2px solid var(--accent);outline-offset:1px}
+.dd-bullets-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);margin-bottom:8px}
+.dd-bullets{display:grid;grid-template-columns:repeat(6,36px);gap:6px}
+.dd-bullet{height:36px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--border-soft);border-radius:7px;cursor:pointer;font-size:15px;color:var(--ink-strong)}
+.dd-bullet:hover{border-color:#6ea8fe}
+.dd-bullet.on{background:var(--active-tint);border-color:var(--active-line)}
+
+/* ---------- modal: khung dùng chung (Vẽ phác thảo/Hướng dẫn ở ghichu_chucnangcacthe.css; Hồ
+   sơ/Cài đặt ở ghichu_giaodien.css — mỗi module chỉ còn khai max-width riêng + nội dung) ---------- */
+.modal-overlay{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(5,13,43,.45);padding:20px}
+.modal-overlay[hidden]{display:none}
+.modal{background:var(--panel);border-radius:14px;box-shadow:0 24px 60px rgba(9,22,60,.28);display:flex;flex-direction:column;max-height:90vh;width:100%}
+.modal-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:14px;font-weight:700;color:var(--ink-strong)}
+.modal-foot{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+.btn-plain{height:32px;padding:0 14px;background:var(--panel);border:1.5px solid var(--border-soft);border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.btn-plain:hover{background:var(--hover)}
+.btn-solid{height:32px;padding:0 16px;background:var(--accent);border:0;border-radius:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer}
+.btn-solid:hover{background:var(--accent-darker)}
+.btn-solid:disabled,.btn-plain:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- responsive ----------
+   Cột Studio < 1024px không còn bị ẩn hẳn: thành ngăn kéo trượt từ phải (.studio.is-drawer) — xem css/responsive.css
+   + updateWorkspaceCols() trong js/ghichu.js. */
+
+/* Ô "Hiển thị [n] …/trang" dùng chung (ghichu_core.js perSelectHtml) — Đã tạo, Dọn dung lượng, Thống kê, Kết quả */
+.td-per{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}
+.td-per select{height:28px;padding:0 24px 0 9px;border:1px solid var(--border-soft);border-radius:8px;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 12 7' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 8px center;color:var(--ink);font:inherit;font-size:13px;appearance:none;cursor:pointer}
+.td-per select:focus{outline:2px solid color-mix(in srgb,var(--accent,#2c4a8c) 35%,transparent);outline-offset:1px}

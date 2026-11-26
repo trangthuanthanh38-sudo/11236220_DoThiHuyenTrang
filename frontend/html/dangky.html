@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng ký — Changie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/auth-style.css">
+</head>
+<body>
+<div class="dc-shell">
+  <div class="dc-side">
+    <div class="dc-logo">TD<span>.</span></div>
+    <div class="dc-hero">
+      <h1>Đăng ký tài khoản</h1>
+      <p>Bắt đầu hành trình<br>tri thức cùng tôi</p>
+    </div>
+  </div>
+
+  <div class="dc-panel">
+    <!-- Bước 1: thông tin đăng ký (UC-02) -->
+    <form class="dc-form" id="step-info">
+      <div class="dc-progress"><span class="is-active"></span><span></span></div>
+
+      <div class="dc-field">
+        <label for="su-name">Tên hiển thị</label>
+        <input class="dc-input" id="su-name" type="text" placeholder="Nguyễn Văn A" required>
+      </div>
+      <div class="dc-field">
+        <label for="su-phone">Số điện thoại</label>
+        <input class="dc-input dc-input--accent" id="su-phone" type="tel" placeholder="0912 345 678" required>
+      </div>
+      <div class="dc-field">
+        <label for="su-pass">Mật khẩu</label>
+        <div class="dc-pass-wrap">
+          <input class="dc-input" id="su-pass" type="password" placeholder="Tối thiểu 8 ký tự, có hoa/thường/số" required>
+          <button class="dc-eye-btn" type="button" id="btn-eye1" aria-label="Hiện mật khẩu">
+            <span class="dc-eye-ring"><span class="dc-eye-dot"></span></span>
+          </button>
+        </div>
+      </div>
+      <div class="dc-field">
+        <label for="su-pass2">Xác nhận mật khẩu</label>
+        <input class="dc-input" id="su-pass2" type="password" placeholder="Nhập lại mật khẩu" required>
+      </div>
+
+      <div id="msg-info" class="dc-msg" hidden></div>
+
+      <button class="dc-btn dc-btn-primary" type="submit" id="btn-info">Tạo tài khoản</button>
+      <!-- UC-01/UC-02 luồng 3a: đăng nhập = đăng ký bằng Google (tài khoản chưa có thì tự tạo) — js/google-login.js -->
+      <button class="dc-btn dc-btn-google" type="button" id="btn-google" data-msg="msg-info">
+        <span class="dc-google-dot"><span></span></span>
+        <span class="dc-google-label">Tiếp tục với Google</span>
+      </button>
+
+      <p class="dc-footer">Đã có tài khoản ? <a href="dangnhap.html">Đăng nhập</a></p>
+    </form>
+
+    <!-- Bước 2: nhập OTP (UC-03) -->
+    <form class="dc-form" id="step-otp" hidden>
+      <div class="dc-progress"><span class="is-active"></span><span class="is-active"></span></div>
+      <p class="dc-step-eyebrow">Bước 2 / 2</p>
+      <h2 class="dc-step-title">Nhập mã xác thực</h2>
+      <p class="dc-step-hint">Mã gồm 6 chữ số vừa được gửi tới <strong id="otp-phone-label"></strong>.</p>
+
+      <div class="dc-code-row" id="code-row">
+        <input class="dc-code-box" inputmode="numeric" maxlength="1">
+        <input class="dc-code-box" inputmode="numeric" maxlength="1">
+        <input class="dc-code-box" inputmode="numeric" maxlength="1">
+        <input class="dc-code-box" inputmode="numeric" maxlength="1">
+        <input class="dc-code-box" inputmode="numeric" maxlength="1">
+        <input class="dc-code-box" inputmode="numeric" maxlength="1">
+      </div>
+      <p class="dc-msg dc-msg--hint">Chưa nhận được mã ? <a href="#" id="link-resend">Gửi lại</a></p>
+
+      <div id="msg-otp" class="dc-msg" hidden></div>
+
+      <button class="dc-btn dc-btn-primary" type="submit" id="btn-otp">Xác nhận</button>
+      <p class="dc-footer"><a href="#" id="link-back">Quay lại bước trước</a></p>
+    </form>
+
+    <!-- Bước hoàn tất -->
+    <div class="dc-form" id="step-done" hidden>
+      <div class="dc-done">
+        <span class="dc-done-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0d6efd" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+        </span>
+        <p>Tài khoản đã được kích hoạt. Bạn có thể đăng nhập ngay.</p>
+      </div>
+      <button class="dc-btn dc-btn-primary" type="button" id="btn-done">Về trang đăng nhập</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-client.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="../js/google-login.js"></script>
+<script src="../js/dangky.js"></script>
+</body>
+</html>

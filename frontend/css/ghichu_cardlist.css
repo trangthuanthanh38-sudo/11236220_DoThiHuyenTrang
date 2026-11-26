@@ -1,0 +1,114 @@
+/* ======================================================================
+   ghichu_cardlist.css — tab "Đã tạo" dạng LƯỚI THẺ dùng chung (js/ghichu_cardlist.js) cho Ôn tập / Thi thử /
+   Flashcard / Sơ đồ tư duy. Bản sao khối "ĐÃ TẠO dạng THẺ" của ghichu_tomtat.css (tiền tố ts- -> cl-) — sửa giao diện
+   thẻ thì sửa cả 2 chỗ. Thang chữ app (×2/3 của mẫu `tom-tat sửa phần đã tạo.html`), chạy cả giao diện Tối.
+   ====================================================================== */
+:root{
+  --cl-primary:var(--ink-strong);--cl-on-primary:var(--panel);
+  --cl-soft:#edf1f7;--cl-soft-line:#c7cfe0;--cl-chip:#f0f0f0;
+  --cl-red:#b83d38;--cl-red-bg:#fcf2f1;
+  --cl-warn-bg:#fdf3dc;--cl-warn:#9a5b12;
+  --cl-ok-bg:#f0f7f2;--cl-ok:#298052;
+  --cl-head:#dddfe6;--cl-new:#eef1f6;--cl-new-hover:#e7ebf3;--cl-new-line:#b4bccb;
+}
+:root[data-theme="dark"]{
+  --cl-soft:#1d2640;--cl-soft-line:#3a4666;--cl-chip:#222b3f;
+  --cl-red:#f07b76;--cl-red-bg:#2c1719;
+  --cl-warn-bg:#2d2412;--cl-warn:#f0c46a;
+  --cl-ok-bg:#14271d;--cl-ok:#5cc48a;
+  --cl-head:#262f47;--cl-new:#1a2234;--cl-new-hover:#1d2640;--cl-new-line:#3a4666;
+}
+.cl-clist{max-width:1180px}
+.cl-tbar,.cl-cards,.cl-overlay,.cl-toast{font-size:14px}
+.cl-tbar button,.cl-cards button,.cl-overlay button,.cl-toast button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+.cl-tbar{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:2px 0 14px}
+.cl-tbar .sp{flex:1}
+.cl-srch{display:flex;align-items:center;gap:8px;width:min(267px,100%);height:34px;padding:0 10px 0 13px;background:var(--panel);border:1px solid var(--border-soft);border-radius:9px;color:var(--muted)}
+.cl-srch:focus-within{border-color:var(--cl-primary);box-shadow:0 0 0 .5px var(--cl-primary)}
+.cl-srch input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);border:0;outline:none;background:transparent}
+.cl-srch input::placeholder{color:var(--muted-3)}
+.cl-srch .clr{color:var(--muted);font-size:17px !important;line-height:1}
+.cl-srch .clr[hidden]{display:none}
+.cl-fpill{height:32px;padding:0 14px !important;border-radius:16px;background:var(--panel) !important;border:1px solid var(--border-soft) !important;white-space:nowrap}
+.cl-fpill:hover:not(.on){border-color:var(--muted-3) !important}
+.cl-fpill.on{background:var(--cl-soft) !important;border-color:var(--cl-primary) !important;box-shadow:inset 0 0 0 .5px var(--cl-primary);color:var(--cl-primary) !important;font-weight:500}
+.cl-fpill i{font-style:normal;font-size:11.5px;font-weight:600;background:var(--cl-warn-bg);color:var(--cl-warn);border-radius:8px;padding:1px 6px;margin-left:6px}
+.cl-sortb{position:relative}
+.cl-sortb > button{display:flex;align-items:center;gap:6px;height:32px;padding:0 13px !important;background:var(--panel) !important;border:1px solid var(--border-soft) !important;border-radius:9px;white-space:nowrap}
+.cl-sortb > button span{color:var(--muted)}
+.cl-sortb > button b{font-weight:500}
+.cl-menu{position:absolute;right:0;top:calc(100% + 4px);min-width:100%;background:var(--panel);border:1px solid var(--border-soft);border-radius:9px;box-shadow:0 8px 22px rgba(10,26,77,.14);padding:5px;z-index:5}
+.cl-menu[hidden]{display:none}
+.cl-menu button{display:block;width:100%;text-align:left;padding:7px 9px !important;border-radius:7px;white-space:nowrap}
+.cl-menu button:hover{background:var(--cl-soft) !important}
+.cl-menu button.on{color:var(--cl-primary);font-weight:500}
+.cl-pgr{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+.cl-pgr[hidden]{display:none}
+.cl-pgr button{width:26px;height:26px;border-radius:50%;border:1px solid var(--border-soft) !important;background:var(--panel) !important;font-size:15px !important;line-height:1;color:var(--ink)}
+.cl-pgr button:disabled{opacity:.35;cursor:not-allowed}
+.cl-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 19px}
+@media (max-width:900px){.cl-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cl-scard{position:relative;min-height:211px;background:var(--panel);border:1px solid var(--border-soft);border-radius:11px;display:flex;flex-direction:column;cursor:pointer;text-align:left;transition:box-shadow .15s}
+.cl-scard:hover{box-shadow:0 6px 16px rgba(10,26,77,.1)}
+.cl-scard:focus-visible{outline:2px solid var(--cl-primary);outline-offset:2px}
+.cl-scard .sh{height:48px;flex:none;display:flex;align-items:center;gap:9px;padding:0 9px 0 16px;background:var(--cl-head);border-radius:10px 10px 0 0}
+.cl-scard .sh .ic{width:29px;height:29px;border-radius:7px;background:var(--cl-primary);color:var(--cl-on-primary);display:grid;place-items:center;flex:none}
+.cl-scard .sh b{flex:1;min-width:0;font-size:14.7px;font-weight:500;color:var(--cl-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-scard .more{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--muted) !important;font-size:15px !important;letter-spacing:1px;flex:none}
+.cl-scard .more:hover{background:color-mix(in srgb,var(--panel) 70%,transparent) !important;color:var(--ink) !important}
+.cl-scard .sb{flex:1;padding:13px 16px 11px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.cl-scard .sb .l1{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-strong)}
+.cl-scard .sb .mu{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-badge{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;margin-top:3px;padding:2px 9px;border-radius:9px;font-size:12px;font-weight:500;background:var(--cl-soft);color:var(--cl-primary)}
+.cl-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.cl-badge.warn{background:var(--cl-warn-bg);color:var(--cl-warn)}
+.cl-badge.ok{background:var(--cl-ok-bg);color:var(--cl-ok)}
+.cl-badge.bad{background:var(--cl-red-bg);color:var(--cl-red)}
+.cl-badge.gone{background:var(--cl-chip);color:var(--muted)}
+.cl-scard .sf{height:38px;flex:none;border-top:1px solid var(--border-soft);display:flex;align-items:center;gap:12px;padding:0 16px}
+.cl-scard .sf .d{flex:1;min-width:0;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-link{color:var(--cl-primary) !important;font-weight:500;white-space:nowrap}
+.cl-link:hover{text-decoration:underline;text-underline-offset:3px}
+.cl-cbusy{display:flex;align-items:center;gap:7px;color:var(--cl-primary);font-weight:500}
+.cl-spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--cl-soft-line);border-top-color:var(--cl-primary);animation:cl-rot .8s linear infinite}
+@keyframes cl-rot{to{transform:rotate(360deg)}}
+.cl-cmenu{position:absolute;right:8px;top:43px;z-index:6;background:var(--panel);border:1px solid var(--border-soft);border-radius:9px;box-shadow:0 8px 22px rgba(10,26,77,.14);padding:4px;min-width:150px;cursor:default}
+.cl-cmenu button{display:block;width:100%;text-align:left;padding:6px 9px !important;border-radius:6px;font-size:13px !important;white-space:nowrap}
+.cl-cmenu button:hover:not(:disabled){background:var(--cl-soft) !important}
+.cl-cmenu button:disabled{opacity:.4;cursor:not-allowed}
+.cl-cmenu button.del{color:var(--cl-red) !important}
+.cl-cmenu button.del:hover{background:var(--cl-red-bg) !important}
+.cl-snew{min-height:211px;border:1.5px dashed var(--cl-new-line) !important;border-radius:11px;background:var(--cl-new) !important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px !important;text-align:center}
+.cl-snew:hover{background:var(--cl-new-hover) !important;border-color:var(--cl-primary) !important}
+.cl-snew .pl{width:32px;height:32px;border-radius:50%;background:var(--panel);border:1px solid var(--border-soft);display:grid;place-items:center;margin-bottom:3px}
+.cl-snew b{font-weight:500}
+.cl-snew span{color:var(--muted)}
+.cl-nores{grid-column:1 / -1;background:var(--panel);border:1px solid var(--border-soft);border-radius:11px;padding:32px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.cl-nores b{font-weight:500}
+.cl-nores p{margin:0;color:var(--muted)}
+.cl-btn-sm{height:32px;padding:0 14px !important;border-radius:16px;border:1px solid var(--muted-3) !important;background:var(--panel) !important;font-weight:500}
+.cl-btn-sm:hover{background:var(--hover) !important}
+.cl-toast{position:absolute;left:50%;bottom:21px;transform:translateX(-50%);max-width:90%;background:var(--cl-primary);color:var(--cl-on-primary);font-size:15px;padding:8px 16px;border-radius:16px;z-index:9}
+.cl-toast[hidden]{display:none}
+.cl-toast button{color:inherit !important;font-weight:500;text-decoration:underline;text-underline-offset:3px;margin-left:12px}
+/* hộp lịch sử (lần làm / lần ôn / điểm chi tiết) */
+.cl-overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:rgba(5,13,41,.35);padding:16px}
+.cl-overlay[hidden]{display:none}
+.cl-modal{width:min(540px,100%);max-height:calc(100% - 32px);display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border-soft);border-radius:16px;box-shadow:0 24px 60px rgba(10,26,77,.2);color:var(--ink)}
+.cl-mhead{display:flex;align-items:center;gap:12px;padding:14px 16px 10px 20px;border-bottom:1px solid var(--border)}
+.cl-mhead b{flex:1;min-width:0;font-size:16px;font-weight:500;color:var(--ink-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-mx{width:30px;height:30px;border-radius:50%;background:var(--cl-chip) !important;font-size:18px !important;line-height:1}
+.cl-mbody{overflow:auto;padding:10px 20px 18px}
+.cl-mbody h4{margin:8px 0 6px;font-size:13px;font-weight:500;color:var(--muted)}
+.cl-hrow{display:grid;grid-template-columns:62px minmax(60px,1fr) 70px minmax(0,auto) auto;align-items:center;column-gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.cl-hrow:last-child{border-bottom:0}
+.cl-hrow .hl{font-weight:500}
+.cl-hrow .hm{font-weight:500;color:var(--cl-primary);text-align:right}
+.cl-hrow .hs,.cl-hrow .hr{color:var(--muted);white-space:nowrap}
+.cl-hb{height:6px;border-radius:3px;background:var(--cl-soft);overflow:hidden}
+.cl-hb i{display:block;height:100%;background:var(--cl-primary);border-radius:3px}
+.cl-hempty{padding:14px 0;color:var(--muted)}
+.cl-hmore{padding:9px 0 0;color:var(--muted);font-size:13px}
+.cl-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.cl-stats span{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:9px;background:var(--cl-soft);color:var(--muted);font-size:13px}
+.cl-stats span b{font-size:17px;font-weight:500;color:var(--cl-primary)}

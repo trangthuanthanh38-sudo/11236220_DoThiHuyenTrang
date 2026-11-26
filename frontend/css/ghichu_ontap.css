@@ -1,0 +1,337 @@
+/* ======================================================================
+   ghichu_ontap.css — MODULE "Tạo câu hỏi ôn tập" (UC-21, Studio AI): diện mạo
+   RIÊNG của #ontap-pane (html/ghichu_ontap.frag, logic js/ghichu_ontap.js). Bố cục
+   theo giao diện mẫu on-tap-tao-moi.html (thanh trên + tab; Tạo mới 2 cột; bảng Đã tạo;
+   Làm bài; Kết quả 2 cột) nhưng thu kích thước chữ về thang của app (mẫu vẽ trên khung
+   1440px rồi phóng to: 21px -> 14px), bỏ khung cố định để co giãn theo cột giữa, và dùng
+   lại các biến màu --ink/--panel/--border... của ghichu.css để chạy đúng cả giao diện Tối
+   (UC-09). Màu riêng của mẫu (xanh navy nhạt, 3 sắc độ khó, Đúng/Sai) là biến --ontap-*
+   khai báo bên dưới, có bản Tối.
+   ====================================================================== */
+.ontap-pane{
+  --ontap-primary:var(--ink-strong);
+  --ontap-on-primary:var(--panel);
+  --ontap-soft:#edf1f7;            /* nền ô chọn / chip đang bật */
+  --ontap-soft-line:#c7cfe0;       /* độ khó Dễ, vạch phân cách nhạt */
+  --ontap-mid:#6b789e;             /* độ khó Trung bình */
+  --ontap-chip:#f0f0f0;            /* nút đóng, số đếm tab, gợi ý */
+  --ontap-green:#298052;--ontap-green-bg:#f0f7f2;
+  --ontap-red:#b83d38;--ontap-red-bg:#fcf2f1;
+  position:relative;min-height:0;flex:1;display:flex;flex-direction:column;background:var(--panel);font-size:16px;color:var(--ink)
+}
+:root[data-theme="dark"] .ontap-pane{
+  --ontap-soft:#1d2640;--ontap-soft-line:#3a4666;--ontap-mid:#8390b5;--ontap-chip:#222b3f;
+  --ontap-green:#5cc48a;--ontap-green-bg:#14271d;
+  --ontap-red:#f07b76;--ontap-red-bg:#2c1719;
+}
+.ontap-pane[hidden],.ontap-pane [hidden]{display:none !important}
+.ontap-pane button,.ontap-pane input{font-family:inherit;font-size:inherit;color:inherit}
+.ontap-pane button{background:none;border:0;cursor:pointer}
+.ontap-pane input{border:0;outline:none;background:transparent}
+
+/* ---------- thanh trên: nút đóng tròn + tiêu đề + tab + nút chính ---------- */
+.ontap-head{flex:0 0 auto;display:flex;align-items:center;gap:25px;padding:16px 25px;border-bottom:1px solid var(--border)}
+.ontap-close{flex:0 0 auto;width:39px;height:39px;border-radius:50%;background:var(--ontap-chip) !important;display:grid;place-items:center;color:var(--ink-strong)}
+.ontap-close:hover{filter:brightness(.94)}
+.ontap-head-titles{min-width:0;display:flex;align-items:center}
+.ontap-title{margin:0;min-width:0;font-size:22px;font-weight:500;color:var(--ink-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ---------- tab "Tạo mới / Đã tạo": dưới dòng kẻ của thanh trên, mép trái thẳng hàng với mép trái các
+   ô/bảng bên dưới (cùng max-width + padding ngang với .ontap-form/.ontap-list). Tab đang chọn = ô nền
+   xám xanh bo tròn, không gạch chân. ---------- */
+.ontap-tabbar{flex:0 0 auto}
+.ontap-tabbar-in{max-width:1334px;margin:0 auto;padding:14px clamp(21px,4vw,55px) 0}
+.ontap-tabs{display:flex;gap:6px}
+.ontap-tabs button{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px !important;border-radius:10px;font-size:16px;color:var(--muted)}
+.ontap-tabs button span{display:inline-flex;align-items:center;gap:8px}
+.ontap-tabs button i{font-style:normal;font-size:13px;font-weight:600;background:var(--ontap-chip);border-radius:10px;padding:1px 8px}
+.ontap-tabs button i:empty{display:none}
+.ontap-tabs button:not(.on):hover{background:var(--hover) !important;color:var(--ink)}
+.ontap-tabs button.on{background:var(--ontap-soft) !important;color:var(--ontap-primary);font-weight:500}
+.ontap-tabs button.on i{background:var(--ontap-primary);color:var(--ontap-on-primary)}
+.ontap-head-right{margin-left:auto;display:flex;align-items:center}
+.ontap-head-note{font-size:16px;color:var(--muted)}
+.ontap-body{position:relative;flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+/* Mọi trang căn GIỮA cả ngang lẫn dọc trong vùng hiển thị. min-height (không dùng height) nên nội
+   dung dài hơn màn hình vẫn cuộn bình thường thay vì bị cắt mất phần đầu. */
+.ontap-screen{min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.ontap-screen > *{width:100%}
+
+/* ---------- nút / chữ dùng chung ---------- */
+.ontap-btn-primary{display:inline-flex;align-items:center;gap:9px;height:46px;padding:0 25px;background:var(--ontap-primary) !important;color:var(--ontap-on-primary) !important;border-radius:23px;font-weight:500;white-space:nowrap;transition:opacity .15s}
+.ontap-btn-primary:hover:not(:disabled){filter:brightness(1.35)}
+.ontap-btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.ontap-btn-primary.busy{opacity:1;cursor:progress}
+.ontap-btn-primary.sm{height:39px;padding:0 18px;font-size:15px}
+.ontap-btn-secondary{height:46px;padding:0 23px;background:var(--panel) !important;border:1px solid var(--muted-3) !important;border-radius:23px;font-weight:500;white-space:nowrap}
+.ontap-btn-secondary:hover{background:var(--hover) !important}
+.ontap-btn-secondary.sm{height:37px;padding:0 16px;border-radius:18px;font-size:15px}
+.ontap-btn-text{padding:5px 2px !important;color:var(--muted) !important;white-space:pre}
+.ontap-btn-text:hover:not(:disabled){color:var(--ink) !important}
+.ontap-btn-text:disabled{opacity:.35;cursor:not-allowed}
+.ontap-link{color:var(--ontap-primary) !important;font-weight:500}
+.ontap-link:hover{text-decoration:underline;text-underline-offset:3px}
+.ontap-spin{width:15px;height:15px;border-radius:50%;border:2px solid color-mix(in srgb,var(--ontap-on-primary) 35%,transparent);border-top-color:var(--ontap-on-primary);animation:ontap-rot .8s linear infinite}
+@keyframes ontap-rot{to{transform:rotate(360deg)}}
+.ontap-muted{color:var(--muted)}
+.ontap-nowrap{white-space:nowrap}
+.ontap-ell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ontap-lbl{font-weight:500}
+.ontap-h3{font-size:17px;font-weight:500;color:var(--ink-strong)}
+.ontap-navy{color:var(--ontap-primary);font-weight:500}
+.ontap-red{color:var(--ontap-red);font-weight:500}
+
+/* ===== TẠO MỚI — 2 cột: trái (nguồn, tên/số câu, độ khó) / phải (chế độ, dạng, sau mỗi câu, đang tạo) ===== */
+.ontap-form{display:grid;grid-template-columns:minmax(0,700fr) minmax(0,420fr);gap:25px;max-width:1334px;margin:0 auto;padding:25px clamp(21px,4vw,55px) 37px;align-items:stretch}
+.ontap-main,.ontap-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ontap-side{gap:13px}
+.ontap-box{background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:12px 17px 13px;display:flex;flex-direction:column;gap:12px;transition:opacity .2s}
+.ontap-side .ontap-box{border-radius:16px;padding:16px 18px}
+.ontap-side .ontap-box--tight{gap:9px}
+.ontap-box-head{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.ontap-faded{opacity:.4;pointer-events:none}
+.ontap-locked{pointer-events:none}
+.ontap-locked .ontap-box,.ontap-locked .ontap-field{opacity:.75}
+.ontap-row-between{display:flex;justify-content:space-between;align-items:center;gap:14px}
+
+/* Chọn Môn */
+.ontap-select{position:relative}
+.ontap-select > button{display:flex;align-items:center;gap:6px;border:1px solid var(--muted-3) !important;border-radius:9px;padding:5px 12px !important;background:var(--panel) !important}
+.ontap-select > button:hover{border-color:var(--ontap-primary) !important}
+.ontap-select > button b{font-weight:500;max-width:253px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ontap-menu{position:absolute;right:0;top:calc(100% + 4px);min-width:100%;max-height:322px;overflow:auto;background:var(--panel);border:1px solid var(--border-soft);border-radius:9px;box-shadow:0 8px 22px rgba(10,26,77,.14);padding:5px;z-index:5}
+.ontap-menu button{display:block;width:100%;text-align:left;padding:7px 9px !important;border-radius:7px;white-space:nowrap}
+.ontap-menu button:hover{background:var(--ontap-soft) !important}
+.ontap-menu button.on{color:var(--ontap-primary);font-weight:500}
+.ontap-menu .empty{padding:7px 9px;color:var(--muted)}
+
+/* Chip nguồn (Chương / tệp PDF của Môn đang chọn) */
+.ontap-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ontap-chip{display:flex;align-items:center;gap:8px;padding:6px 13px 6px 10px !important;border:1px solid var(--border-soft) !important;border-radius:9px;background:var(--panel) !important;white-space:nowrap;max-width:100%}
+.ontap-chip:hover{border-color:var(--muted-3) !important}
+.ontap-chip .nm{overflow:hidden;text-overflow:ellipsis}
+.ontap-chip .kd{font-size:14px;color:var(--muted-2)}
+.ontap-chip.on{background:var(--ontap-soft) !important;border-color:var(--ontap-primary) !important;box-shadow:inset 0 0 0 .5px var(--ontap-primary);color:var(--ontap-primary);font-weight:500}
+.ontap-chips-empty{color:var(--muted-2);font-size:15px}
+.ontap-cb{width:16px;height:16px;flex:none;border-radius:5px;border:1.5px solid var(--muted-3);background:var(--panel);display:grid;place-items:center}
+.ontap-chip.on .ontap-cb{background:var(--ontap-primary);border-color:var(--ontap-primary)}
+.ontap-chip:not(.on) .ontap-cb svg{display:none}
+
+/* Tên + Số câu */
+.ontap-fields{display:flex;gap:12px}
+.ontap-field{background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:12px 17px;display:flex;flex-direction:column;gap:2px;cursor:text;transition:border-color .15s,background .15s}
+.ontap-field:focus-within{border-color:var(--ontap-primary);box-shadow:0 0 0 .5px var(--ontap-primary)}
+.ontap-field.err{background:var(--ontap-red-bg);border-color:var(--ontap-red);box-shadow:0 0 0 .5px var(--ontap-red)}
+.ontap-field .ontap-lbl{white-space:nowrap}
+.ontap-field input{width:100%;padding:0;color:var(--ink)}
+.ontap-field input::placeholder{color:var(--muted-2)}
+.ontap-f-name{flex:1;min-width:0}
+.ontap-f-count{width:184px;flex:none}
+.ontap-f-count .in{display:flex;align-items:center;gap:3px}
+.ontap-f-count input{flex:1;min-width:0}
+.ontap-hint-pill{align-self:flex-start;background:var(--ontap-chip);color:var(--muted);font-weight:500;padding:3px 13px;border-radius:13px}
+.ontap-hint-pill:empty{display:none}
+.ontap-error{display:flex;gap:9px;padding-left:3px;color:var(--ontap-red);line-height:1.5}
+.ontap-error::before{content:"!";width:17px;height:17px;flex:none;margin-top:2px;border-radius:50%;background:var(--ontap-red);color:var(--panel);font-size:12.5px;font-weight:600;display:grid;place-items:center;line-height:1}
+
+/* Phân bổ độ khó */
+.ontap-seg{display:flex;gap:2px;padding:2px;background:var(--ontap-chip);border-radius:16px}
+.ontap-seg button{font-size:15px;color:var(--muted);padding:3px 12px !important;border-radius:14px;border:1px solid transparent !important;white-space:nowrap}
+.ontap-seg button:hover:not(.on){color:var(--ink)}
+.ontap-seg button.on{background:var(--panel) !important;border-color:var(--border-soft) !important;color:var(--ontap-primary);font-weight:500}
+.ontap-levels{display:flex;gap:9px}
+.ontap-level{flex:1;min-width:0;display:flex;align-items:center;gap:7px;background:var(--ontap-soft);border:1px solid transparent;border-radius:9px;padding:8px 9px 8px 13px}
+.ontap-level .t{flex:1;min-width:0;white-space:nowrap}
+.ontap-level .t div:last-child{font-size:17px;font-weight:500;color:var(--ontap-primary)}
+.ontap-level .pm{display:none;gap:5px}
+.ontap-custom .ontap-level{background:var(--panel);border-color:var(--muted-3)}
+.ontap-custom .ontap-level .pm{display:flex}
+.ontap-level .pm button{width:23px;height:23px;border-radius:50%;background:var(--panel) !important;border:1px solid var(--border-soft) !important;font-size:15px;line-height:1;color:var(--muted);display:grid;place-items:center;padding:0}
+.ontap-level .pm button:hover:not(:disabled){border-color:var(--ontap-primary) !important;color:var(--ontap-primary)}
+.ontap-level .pm button:disabled{opacity:.35;cursor:not-allowed}
+.ontap-dist{display:flex;gap:3px}
+.ontap-dist i{height:7px;border-radius:3px;min-width:0;transition:flex-grow .2s}
+.ontap-dist .c1{background:var(--ontap-soft-line)}.ontap-dist .c2{background:var(--ontap-mid)}.ontap-dist .c3{background:var(--ontap-primary)}
+
+/* Cột phải */
+.ontap-pill{background:var(--ontap-soft);color:var(--ontap-primary);font-weight:500;padding:3px 13px;border-radius:14px}
+.ontap-types{display:flex;gap:8px}
+.ontap-types button{flex:1;height:39px;border-radius:9px;border:1px solid var(--border-soft) !important;background:var(--panel) !important;color:var(--muted)}
+.ontap-types button:hover:not(.on){border-color:var(--muted-3) !important}
+.ontap-types button.on{background:var(--ontap-soft) !important;border-color:var(--ontap-primary) !important;box-shadow:inset 0 0 0 .5px var(--ontap-primary);color:var(--ontap-primary);font-weight:500}
+.ontap-sw-row{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;padding:0 !important}
+.ontap-sw{width:39px;height:23px;border-radius:12px;background:var(--muted-3);position:relative;flex:none;transition:background .2s}
+.ontap-sw::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.ontap-sw-row.on .ontap-sw{background:var(--ontap-primary)}
+.ontap-sw-row.on .ontap-sw::after{transform:translateX(16px);background:var(--ontap-on-primary)}
+
+/* Ô "Đang tạo" — tiến độ theo BƯỚC (backend tạo trong 1 request, không báo % thật) */
+/* Hai cột kết thúc bằng nhau: ô CUỐI mỗi cột (Phân bổ độ khó / Đang tạo) giãn lấp phần còn lại,
+   cột nào ngắn hơn thì ô cuối của cột đó dài ra — tự điều chỉnh theo nội dung. */
+.ontap-main > .ontap-box:last-child,.ontap-side > .ontap-box:last-child{flex:1 1 auto}
+.ontap-panel{min-height:172px}
+.ontap-panel p{margin:0;line-height:1.5}
+.ontap-panel.run{gap:8px}
+.ontap-p-head{display:flex;justify-content:space-between;align-items:baseline}
+.ontap-pbar{flex:none;height:3px;border-radius:2px;background:var(--border);overflow:hidden;position:relative}
+.ontap-pbar i{position:absolute;top:0;bottom:0;left:0;width:100%;background:var(--ontap-primary)}
+.ontap-pbar.indet i{width:35%;animation:ontap-slide 1.3s ease-in-out infinite}
+@keyframes ontap-slide{0%{left:-35%}100%{left:100%}}
+.ontap-steps{display:flex;flex-direction:column;margin-top:2px}
+.ontap-step{display:flex;align-items:center;gap:9px;height:32px}
+.ontap-step .t{flex:1}
+.ontap-step .ic{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border-soft);flex:none;display:grid;place-items:center}
+.ontap-step.done .ic{background:var(--ontap-primary);border-color:var(--ontap-primary)}
+.ontap-step.now .ic{border:2px solid var(--ontap-soft-line);border-top-color:var(--ontap-primary);animation:ontap-rot .8s linear infinite}
+.ontap-step:not(.done):not(.now) .t{color:var(--muted)}
+.ontap-step .s{color:var(--muted)}
+.ontap-step.now .s{color:var(--ontap-primary);font-weight:500}
+.ontap-ready{display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+.ontap-ready .acts{display:flex;align-items:center;gap:16px}
+
+/* ===== ĐÃ TẠO — bảng ===== */
+/* Mép bảng + dòng đếm thẳng cột với CHỮ "Tạo mới" của tab (nút tab có padding trong 16px) -> thêm 16px
+   vào padding ngang của khung; 2 bên đều nhau để bảng vẫn căn giữa. Chữ bảng nhỏ hơn phần còn lại (14px). */
+.ontap-list{max-width:1334px;margin:0 auto;padding:25px calc(clamp(21px,4vw,55px) + 16px) 37px;font-size:14px}
+.ontap-list > p{margin:0 0 13px}
+.ontap-table{background:var(--panel);border:1px solid var(--border-soft);border-radius:16px;overflow:hidden}
+.ontap-tr{white-space:nowrap;display:grid;grid-template-columns:minmax(0,3fr) 69px 85px 115px 115px minmax(195px,2fr);column-gap:13px;align-items:center;padding:0 18px}
+.ontap-th{height:40px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--border)}
+.ontap-td{min-height:60px;padding-top:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.ontap-table > :last-child{border-bottom:0}
+.ontap-td .name{min-width:0}
+.ontap-td .name b{font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;color:var(--ink-strong)}
+.ontap-td .name span{font-size:13px;margin-top:1px;display:block;overflow:hidden;text-overflow:ellipsis}
+.ontap-td .acts{display:flex;justify-content:flex-end;align-items:center;gap:9px}
+/* "Xem điểm / Ẩn điểm" cùng cỡ, cùng hàng với "Làm lại / Làm bài / Làm tiếp" (cùng .ontap-btn-secondary.sm) */
+.ontap-td .acts .ontap-btn-secondary{height:32px;padding:0 13px !important;border-radius:16px;font-size:13.5px;min-width:84px;justify-content:center;display:inline-flex;align-items:center}
+.ontap-btn-ghost{border-color:transparent !important;background:var(--ontap-soft) !important;color:var(--ontap-primary)}
+.ontap-btn-ghost:hover{filter:brightness(.97)}
+.ontap-td.can{cursor:pointer}
+.ontap-td.can:hover{background:var(--hover)}
+.ontap-td.open,.ontap-td.open:hover{background:var(--ontap-soft);border-bottom-color:transparent}
+.ontap-td.open .ontap-btn-ghost{background:var(--panel) !important}
+.ontap-del{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:7px;color:var(--muted-3);font-size:18px;line-height:1}
+.ontap-del:hover{background:var(--danger-tint) !important;color:var(--danger)}
+/* Lịch sử lần làm: DÙNG CHUNG lưới cột .ontap-tr nên số liệu thẳng cột tiêu đề —
+   Lần N + thanh điểm | số câu đúng (dưới "Số câu") | thời gian làm (dưới "Lần làm") | % (dưới "Điểm cao
+   nhất") | lúc nộp (dưới "Làm gần nhất"). */
+.ontap-hist{background:var(--ontap-soft);border-bottom:1px solid var(--border)}
+.ontap-hmore{padding:8px 18px 9px;color:var(--muted);border-top:1px solid var(--ontap-soft-line)}
+.ontap-hrow{height:38px;border-top:1px solid var(--ontap-soft-line);color:var(--muted);font-variant-numeric:tabular-nums}
+.ontap-hrow .hn{display:flex;align-items:center;gap:14px;min-width:0}
+.ontap-hrow .hn > span:first-child{flex:none;width:52px}
+.ontap-hrow .hb{flex:1;max-width:220px;height:5px;border-radius:3px;background:var(--ontap-soft-line);overflow:hidden}
+.ontap-hrow .hb i{display:block;height:100%;background:var(--ontap-primary)}
+.ontap-hrow .sc{color:var(--ontap-primary);font-weight:500}
+.ontap-hempty{padding:10px 18px;color:var(--muted)}
+.ontap-empty-row{padding:18px;color:var(--muted)}
+@media (max-width:820px){
+  .ontap-tr{grid-template-columns:minmax(0,1fr) auto;row-gap:5px}
+  .ontap-th{display:none}
+  .ontap-tr > .col{display:none}
+}
+
+/* ===== LÀM BÀI ===== */
+.ontap-quiz{max-width:736px;margin:0 auto;padding:21px clamp(21px,4vw,55px) 32px;display:flex;flex-direction:column;gap:17px}
+.ontap-notice{display:flex;align-items:center;gap:14px;padding:10px 15px;background:var(--panel);border:1px solid var(--border-soft);border-radius:12px}
+.ontap-notice p{flex:1;margin:0;color:var(--muted)}
+.ontap-notice button{font-weight:600;color:var(--ink)}
+.ontap-progress-head{display:flex;justify-content:space-between;align-items:baseline}
+.ontap-progress-head b{font-size:17px;font-weight:500;color:var(--ink-strong)}
+.ontap-progress-head span{color:var(--muted)}
+.ontap-bar{height:3px;margin-top:8px;background:var(--border);border-radius:2px;overflow:hidden}
+.ontap-bar i{display:block;height:100%;width:0;background:var(--ontap-primary);border-radius:2px;transition:width .25s}
+.ontap-q-text{font-size:17px;font-weight:500;line-height:1.5;color:var(--ink-strong)}
+.ontap-options{display:flex;flex-direction:column;gap:8px}
+.ontap-opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:var(--panel) !important;border:1px solid var(--border-soft) !important;border-radius:13px;padding:9px 16px 9px 14px !important}
+.ontap-opt .key{width:28px;height:28px;flex:none;border-radius:14px;border:1px solid var(--muted-3);background:var(--panel);display:grid;place-items:center;font-weight:500;color:var(--muted);font-size:14.5px}
+.ontap-opt .label{flex:1;line-height:1.5}
+.ontap-opt .tag{font-weight:500;white-space:nowrap}
+.ontap-opt:not(:disabled):hover{border-color:var(--ontap-primary) !important}
+.ontap-opt:disabled{cursor:default}
+.ontap-opt.picked{background:var(--ontap-soft) !important;border-color:var(--ontap-primary) !important;box-shadow:inset 0 0 0 .5px var(--ontap-primary)}
+.ontap-opt.picked .key{background:var(--ontap-primary);border-color:var(--ontap-primary);color:var(--ontap-on-primary)}
+.ontap-opt.picked .tag{color:var(--ontap-primary)}
+.ontap-opt.right{background:var(--ontap-green-bg) !important;border-color:var(--ontap-green) !important;box-shadow:inset 0 0 0 .5px var(--ontap-green)}
+.ontap-opt.right .key{border-color:var(--ontap-green);color:var(--ontap-green)}
+.ontap-opt.right .tag{color:var(--ontap-green)}
+.ontap-opt.wrong{background:var(--ontap-red-bg) !important;border-color:var(--ontap-red) !important;box-shadow:inset 0 0 0 .5px var(--ontap-red)}
+.ontap-opt.wrong .key{border-color:var(--ontap-red);color:var(--ontap-red)}
+.ontap-opt.wrong .tag{color:var(--ontap-red)}
+.ontap-explain{background:var(--panel);border:1px solid var(--border-soft);border-radius:13px;padding:15px 18px 16px;display:flex;flex-direction:column;gap:9px}
+.ontap-explain-text{line-height:1.6;color:var(--muted)}
+.ontap-cite{display:flex;gap:12px}
+.ontap-cite::before{content:"";flex:0 0 auto;width:2px;background:var(--ontap-soft-line)}
+.ontap-cite q{display:block;line-height:1.6;color:var(--muted);quotes:"“" "”"}
+.ontap-cite q:empty{display:none}
+.ontap-src-link{display:block;margin-top:3px;padding:0 !important;font-weight:500;color:var(--ontap-primary) !important;text-align:left;cursor:default !important}
+.ontap-src-link.can-open{color:var(--accent) !important;cursor:pointer !important}
+.ontap-src-link.can-open:hover{text-decoration:underline;text-underline-offset:3px}
+.ontap-quiz-foot{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.ontap-quiz-foot-right{display:flex;align-items:center;gap:12px}
+.ontap-pick-hint{color:var(--muted);margin-right:9px}
+
+/* ===== KẾT QUẢ — 1 cột, cùng khuôn màn "Hoàn thành phiên ôn" của Flashcard: tiêu đề + điểm + meta,
+   4 ô số liệu tô màu, "Xem lại từng câu" co theo chiều cao còn lại (số dòng/trang = vừa khít khung,
+   fitPage() ở JS) + phân trang ‹ › , chân trang ghi chú + nút ===== */
+#ontap-s-result{justify-content:flex-start}
+.ontap-done{flex:1 0 auto;max-width:860px;min-height:520px;margin:0 auto;padding:22px clamp(21px,4vw,55px) 22px;display:flex;flex-direction:column;gap:18px}
+.ontap-done .ontap-score .k{font-size:24px;font-weight:500;line-height:1.3;color:var(--ink-strong)}
+.ontap-done .ontap-score .v{font-size:21px;font-weight:500;color:var(--ontap-primary);line-height:1.3;margin-top:12px}
+.ontap-done .ontap-score .m{color:var(--muted);white-space:pre;margin-top:3px}
+.ontap-done .ontap-notice{margin:0}
+.ontap-stats{display:flex;gap:12px}
+.ontap-stat{flex:1;min-width:0;background:var(--panel);border:1px solid var(--border-soft);border-radius:13px;padding:11px 15px;display:flex;flex-direction:column;gap:1px}
+.ontap-stat .k{color:var(--muted)}
+.ontap-stat .v{font-size:19px;font-weight:500;line-height:1.3;font-variant-numeric:tabular-nums}
+.ontap-stat .s{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ontap-stat.ok{background:var(--ontap-green-bg);border-color:color-mix(in srgb,var(--ontap-green) 25%,transparent)}
+.ontap-stat.ok .v{color:var(--ontap-green)}
+.ontap-stat.no{background:var(--ontap-red-bg);border-color:color-mix(in srgb,var(--ontap-red) 25%,transparent)}
+.ontap-stat.no .v{color:var(--ontap-red)}
+.ontap-stat.skip{background:var(--ontap-chip)}
+.ontap-stat.navy{background:var(--ontap-soft);border-color:var(--ontap-soft-line)}
+.ontap-stat.navy .v{color:var(--ontap-primary)}
+.ontap-stat .new{color:var(--ontap-primary);font-weight:500}
+.ontap-rev{flex:1;min-height:0;display:flex;flex-direction:column}
+.ontap-review-head{flex:none;display:flex;justify-content:space-between;align-items:baseline;min-height:32px}
+.ontap-rh-right{display:flex;align-items:center;gap:18px}
+.ontap-toggle-wrong{color:var(--muted)}
+.ontap-toggle-wrong:hover{color:var(--ink)}
+.ontap-toggle-wrong.on{color:var(--ontap-primary);font-weight:500}
+.ontap-pg{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.ontap-pg button{width:30px;height:30px;border-radius:50%;border:1px solid var(--border-soft) !important;background:var(--panel) !important;font-size:17px;line-height:1;padding:0}
+.ontap-pg button:hover:not(:disabled){border-color:var(--ontap-primary) !important;color:var(--ontap-primary)}
+.ontap-pg button:disabled{opacity:.35;cursor:not-allowed}
+.ontap-rlist{flex:1 1 0;min-height:123px;overflow:hidden;border-bottom:1px solid var(--border)}
+.ontap-row{display:flex;align-items:center;gap:14px;width:100%;height:var(--rh,41px);text-align:left;border-top:1px solid var(--border) !important;padding:0 !important}
+.ontap-row[data-i]:hover .qt{text-decoration:underline;text-underline-offset:3px}
+.ontap-row .n{color:var(--muted);width:23px}
+.ontap-row .qt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ontap-row .st{font-weight:500}
+.ontap-row .st.ok{color:var(--ontap-green)}
+.ontap-row .st.no{color:var(--ontap-red)}
+.ontap-row .st.skip{color:var(--muted);font-weight:400}
+.ontap-done-foot{flex:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ontap-done-foot p{flex:1;margin:0;min-width:200px;line-height:1.5}
+
+.ontap-toast{position:absolute;left:50%;bottom:21px;transform:translateX(-50%);max-width:90%;background:var(--ontap-primary);color:var(--ontap-on-primary);font-size:15px;padding:8px 16px;border-radius:16px;z-index:9}
+
+/* ===== Trang Tạo mới: cỡ chữ nhỏ hơn phần còn lại của module 2,4px ===== */
+#ontap-s-setup{font-size:13.6px}
+#ontap-s-setup .ontap-h3,#ontap-s-setup .ontap-level .t div:last-child{font-size:14.6px}
+#ontap-s-setup .ontap-btn-primary.sm,#ontap-s-setup .ontap-btn-secondary.sm,#ontap-s-setup .ontap-chips-empty,#ontap-s-setup .ontap-seg button,#ontap-s-setup .ontap-level .pm button{font-size:12.6px}
+#ontap-s-setup .ontap-chip .kd{font-size:11.6px}
+#ontap-s-setup .ontap-error::before{font-size:10.6px}
+
+/* ---------- Tab Tạo mới / Đã tạo TRÊN thanh trên, ngay sau tiêu đề (cùng khuôn Tóm tắt): tab đang chọn chữ xanh đậm +
+   gạch chân sát chữ, tab còn lại chữ xám; ghi đè khối tab dưới thanh trên ở phần 1. Đã tạo = lưới thẻ (ghichu_cardlist.css)
+   nằm ngay dưới thanh trên, không căn giữa dọc. ---------- */
+.ontap-head .ontap-tabbar{flex:0 0 auto;display:flex;align-items:center;margin-left:6px}
+.ontap-head-titles:has(+ .ontap-tabbar:not([hidden])){flex:0 1 auto}
+.ontap-head .ontap-tabs{gap:22px}
+.ontap-head .ontap-tabs button{height:auto;padding:4px 1px 3px !important;border-radius:0;font-size:15.5px;color:var(--muted);border-bottom:2px solid transparent !important}
+.ontap-head .ontap-tabs button:not(.on):hover{background:none !important;color:var(--ink)}
+.ontap-head .ontap-tabs button.on{background:none !important;color:var(--ontap-primary);font-weight:500;border-bottom-color:var(--ontap-primary) !important}
+.ontap-head .ontap-tabs button i,.ontap-head .ontap-tabs button.on i{background:var(--ontap-chip);color:var(--muted);font-size:12.5px;font-weight:500;padding:1px 8px}
+#ontap-s-saved{justify-content:flex-start}

@@ -1,0 +1,161 @@
+/* ======================================================================
+   ghichu_chiase.css — CHIA SẺ Môn học / Chương (js/ghichu_chiase.js): hộp "Chia sẻ" kiểu Word / OneNote, thanh
+   trạng thái dưới breadcrumb, avatar "Đang xem" cạnh nút Chia sẻ, mục "Được chia sẻ với tôi" ở cây Notebook.
+   Dùng token màu của ghichu.css (--panel/--ink/--border/--accent…) nên tự đúng giao diện Tối.
+   ====================================================================== */
+
+/* ---------- hộp thoại ---------- */
+.sh-overlay{position:fixed;inset:0;z-index:120;background:rgba(9,16,34,.38);display:flex;align-items:flex-start;justify-content:center;padding:9vh 16px 16px;overflow:auto}
+.sh-dialog{position:relative;width:min(520px,100%);background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:14px;box-shadow:0 24px 60px rgba(9,22,60,.28);padding:20px 22px 18px;font-size:13.5px}
+.sh-dialog--sm{width:min(430px,100%)}
+.sh-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.sh-title{flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;color:var(--ink-strong);line-height:1.35}
+.sh-title-name{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.sh-x{width:30px;height:30px;flex:0 0 auto;display:grid;place-items:center;border:0;border-radius:50%;background:none;color:var(--muted);font-size:21px;line-height:1;cursor:pointer}
+.sh-x:hover{background:var(--hover)}
+.sh-loading{padding:40px 0;text-align:center;color:var(--muted)}
+.sh-text{margin:0 0 14px;line-height:1.55;color:var(--ink)}
+.sh-note{margin:0 0 12px;padding:9px 12px;border-radius:9px;background:var(--soft);color:var(--muted);line-height:1.5;font-size:12.8px}
+.sh-note b{color:var(--ink)}
+.sh-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* nút */
+.sh-btn{height:34px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1.5px solid var(--border-soft);border-radius:9px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sh-btn:hover{background:var(--hover)}
+.sh-btn:disabled{opacity:.6;cursor:default}
+.sh-btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.sh-btn--primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+.sh-btn--ghost{border-color:transparent;color:var(--accent)}
+.sh-btn--ghost:hover{background:var(--accent-tint)}
+.sh-btn--done{border-color:#2e9d5b;color:#2e7d4f;background:#eaf7ef}
+:root[data-theme="dark"] .sh-btn--done{background:#173023;color:#7fd3a0;border-color:#2e6b48}
+.sh-sel{height:34px;padding:0 28px 0 10px;border:1.5px solid var(--border-soft);border-radius:9px;background:var(--panel);color:var(--ink);font:inherit;font-size:12.8px;cursor:pointer;
+  appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.sh-sel--full{width:100%}
+.sh-lbl{display:block;margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+
+/* Chương này | Cả môn */
+.sh-scope{display:flex;gap:4px;padding:3px;margin:0 0 14px;background:var(--soft);border-radius:10px}
+.sh-scope button{flex:1;min-width:0;height:32px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;border:0;border-radius:8px;background:none;color:var(--muted);font:inherit;font-size:12.8px;font-weight:600;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sh-scope button.on{background:var(--panel);color:var(--ink-strong);box-shadow:0 1px 3px rgba(9,22,60,.12)}
+
+/* mời */
+.sh-invite{margin-bottom:6px}
+.sh-field{display:flex;gap:8px;align-items:flex-start}
+.sh-chips{flex:1;min-width:0;min-height:38px;display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:4px 6px;border:1.5px solid var(--border-soft);border-radius:9px;background:var(--panel)}
+.sh-chips:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.sh-chips input{flex:1;min-width:140px;height:26px;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:13.5px;padding:0 4px}
+.sh-field .sh-sel{height:38px}
+.sh-chip{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 4px 0 3px;border-radius:13px;background:var(--accent-tint);color:var(--ink-strong);font-size:12.5px;font-weight:600;max-width:100%}
+.sh-chip button{width:18px;height:18px;border:0;border-radius:50%;background:none;color:var(--muted);font-size:14px;line-height:1;cursor:pointer}
+.sh-chip button:hover{background:rgba(9,22,60,.08)}
+.sh-suggest{width:100%;display:flex;align-items:center;gap:10px;margin-top:6px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.sh-suggest:hover{background:var(--hover)}
+.sh-add{font-size:12.5px;font-weight:600;color:var(--accent)}
+.sh-tag{font-size:11.5px;color:var(--muted);background:var(--soft);padding:2px 8px;border-radius:10px}
+.sh-lookup-msg{margin:7px 2px 0;font-size:12.5px;color:var(--muted);line-height:1.45}
+.sh-msg{width:100%;box-sizing:border-box;margin-top:8px;padding:8px 10px;border:1.5px solid var(--border-soft);border-radius:9px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px;resize:vertical;min-height:56px}
+.sh-msg:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.sh-send-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.sh-hint{flex:1;font-size:12px;color:var(--muted-2)}
+
+/* người */
+.sh-av{width:32px;height:32px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#dfe9fb;color:#1f4f99;font-size:13px;font-weight:700}
+.sh-av img{width:100%;height:100%;object-fit:cover}
+.sh-av--xs{width:20px;height:20px;font-size:10px}
+:root[data-theme="dark"] .sh-av{background:#22355a;color:#bcd2ff}
+.sh-p-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.sh-p-tx b{font-weight:600;color:var(--ink-strong);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-p-tx small{font-size:12px;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-p-role{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+/* mục (liên kết / người có quyền) */
+.sh-sec{border-top:1px solid var(--border);margin-top:14px;padding-top:14px}
+.sh-sec-h{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.sh-people{list-style:none;margin:0;padding:0;max-height:260px;overflow:auto}
+.sh-people li{display:flex;align-items:center;gap:10px;padding:7px 0}
+.sh-people .sh-sel{height:30px;font-size:12.5px}
+.sh-empty{color:var(--muted-2);font-size:12.8px}
+.sh-link-row{display:flex;align-items:center;gap:10px}
+.sh-link-ico{width:36px;height:36px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--muted)}
+.sh-link-ico.on{background:#e3f4ea;color:#2e7d4f}
+:root[data-theme="dark"] .sh-link-ico.on{background:#173023;color:#7fd3a0}
+.sh-link-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sh-link-tx b{font-weight:600;color:var(--ink-strong)}
+.sh-link-tx small{font-size:12px;color:var(--muted-2);line-height:1.4}
+.sh-link-set{margin:12px 0 0 46px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:8px}
+.sh-radio{display:flex;align-items:flex-start;gap:9px;cursor:pointer}
+.sh-radio input{margin:3px 0 0;accent-color:var(--accent)}
+.sh-radio span{display:flex;flex-direction:column}
+.sh-radio b{font-weight:600;font-size:13px;color:var(--ink-strong)}
+.sh-radio small{font-size:12px;color:var(--muted-2)}
+.sh-link-role{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);padding-top:4px;border-top:1px dashed var(--border)}
+.sh-link-role .sh-sel{height:30px}
+.sh-linkoff{align-self:flex-start;border:0;background:none;padding:2px 0;color:var(--danger);font:inherit;font-size:12.8px;font-weight:600;cursor:pointer}
+.sh-linkoff:hover{text-decoration:underline}
+
+/* xin quyền */
+.sh-need{display:flex;gap:14px;align-items:flex-start}
+.sh-need p{margin:0;line-height:1.55}
+.sh-need-ico{width:42px;height:42px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:var(--accent-tint);color:var(--accent)}
+
+.sh-flash{position:absolute;left:50%;bottom:-46px;transform:translateX(-50%);background:#14213d;color:#fff;padding:8px 14px;border-radius:9px;font-size:12.8px;white-space:nowrap;box-shadow:0 8px 20px rgba(9,22,60,.25)}
+.sh-toast{position:fixed;left:50%;bottom:28px;z-index:130;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#14213d;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;box-shadow:0 10px 26px rgba(9,22,60,.3);transition:.2s}
+.sh-toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- avatar "Đang xem" cạnh chuông ---------- */
+.share-presence{display:flex;align-items:center;padding-left:6px}
+.share-presence[hidden]{display:none}
+.sh-pres-av{width:28px;height:28px;margin-left:-6px;border-radius:50%;border:2px solid var(--panel);display:grid;place-items:center;overflow:hidden;background:#e5dcfb;color:#5a37b5;font-size:11.5px;font-weight:700}
+.sh-pres-av img{width:100%;height:100%;object-fit:cover}
+.sh-pres-av:nth-child(2){background:#dcf3e6;color:#257347}
+.sh-pres-av:nth-child(3){background:#fde8d5;color:#9a4c12}
+.sh-pres-more{background:var(--soft) !important;color:var(--muted) !important}
+
+/* ---------- thanh dưới breadcrumb ---------- */
+.share-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 18px;border-bottom:1px solid var(--border);background:var(--soft);color:var(--ink);font-size:12.8px}
+.share-bar[hidden]{display:none}
+.share-bar-ico{display:grid;place-items:center;color:var(--accent)}
+.share-bar-tx{min-width:0}
+.share-bar-tx b{font-weight:600}
+.share-bar-sub{color:var(--muted-2);margin-left:auto}
+.share-bar-btn{height:28px;padding:0 12px;border:1.5px solid var(--border-soft);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.share-bar-btn:hover{background:var(--hover)}
+.share-bar-btn--primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.share-bar-btn--primary:hover{background:var(--accent-dark)}
+.share-bar--view .share-bar-ico{color:var(--muted)}
+.share-bar--view .share-bar-btn{margin-left:8px}
+.share-bar--warn{background:#fff6e0;border-bottom-color:#f2d58f;color:#5e4305}
+.share-bar--warn .share-bar-ico{color:#b07a00}
+.share-bar--warn .share-bar-tx{flex:1}
+.share-bar--info{background:#e9f6ef;border-bottom-color:#bfe3cd;color:#215c3b}
+.share-bar--info .share-bar-ico{color:#2e7d4f}
+:root[data-theme="dark"] .share-bar--warn{background:#2d2412;border-bottom-color:#5a4718;color:#f0d79a}
+:root[data-theme="dark"] .share-bar--info{background:#152a1f;border-bottom-color:#265039;color:#a8e2c0}
+
+/* ---------- cây Notebook ---------- */
+.tree-shared{display:inline-grid;place-items:center;color:var(--muted-2);flex:0 0 auto}
+.tree-shared-head{display:flex;align-items:center;gap:7px;margin:14px 4px 4px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-2)}
+.tree-owner-av{width:20px;height:20px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#dfe9fb;color:#1f4f99;font-size:10px;font-weight:700}
+.tree-owner-av img{width:100%;height:100%;object-fit:cover}
+:root[data-theme="dark"] .tree-owner-av{background:#22355a;color:#bcd2ff}
+.tree-name-wrap{flex:1;min-width:0;display:flex;flex-direction:column}
+.tree-name-wrap .tree-name{flex:none}
+.tree-owner{font-size:11px;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-role{flex:0 0 auto;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:8px;background:var(--soft);color:var(--muted)}
+.tree-role.r-editor{background:var(--accent-tint);color:var(--accent)}
+.tree-shared-empty{margin:4px 10px 6px;font-size:12px;color:var(--muted-2)}
+
+/* ---------- chuông: 2 loại thông báo chia sẻ ---------- */
+.lb-ni-ic.k-share{background:#e5edfc;color:#2457b8}
+.lb-ni-ic.k-share_request{background:#efe7fc;color:#6a3fc0}
+:root[data-theme="dark"] .lb-ni-ic.k-share{background:#1a2846;color:#9dbcff}
+:root[data-theme="dark"] .lb-ni-ic.k-share_request{background:#271d3f;color:#c4a8ff}
+
+@media (max-width:560px){
+  .sh-overlay{padding-top:4vh}
+  .sh-field{flex-direction:column;align-items:stretch}
+  .sh-link-row{flex-wrap:wrap}
+  .sh-link-set{margin-left:0}
+}

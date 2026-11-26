@@ -1,0 +1,59 @@
+/* ghichu_review.css — thẻ Review: Password (màn khoá Chương + hộp đặt mật khẩu) và Translator (js/ghichu_review.js).
+   Màu dùng token của ghichu.css nên chạy cả giao diện Tối. Menu dùng lại .dv-menu / .dv-menu-row của ghichu_ve.css. */
+
+/* ổ khoá nhỏ cạnh tên Chương ở cây */
+.tree-pw{display:inline-flex;align-items:center;margin-left:4px;color:var(--muted);flex:0 0 auto}
+
+/* ---- màn "This chapter is password protected" ---- */
+.pw-lock{display:flex;justify-content:center;padding:56px 16px 40px}
+.pw-lock[hidden]{display:none}
+.pw-lock-card{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
+  padding:28px 26px 22px;background:var(--panel);border:1px solid var(--border-soft);border-radius:14px;box-shadow:0 10px 30px rgba(9,22,60,.08)}
+.pw-lock-ico{color:var(--accent);margin-bottom:2px}
+.pw-lock-title{font-size:17px;font-weight:700;color:var(--ink-strong)}
+.pw-lock-sub{font-size:13.5px;color:var(--muted);line-height:1.5}
+.pw-lock-form{width:100%;display:flex;gap:8px;margin-top:6px}
+.pw-lock-form .pw-input{flex:1}
+.pw-lock-form .btn-solid{height:36px}
+.pw-lock-hint{font-size:12.5px;color:var(--muted);align-self:stretch;text-align:left}
+.pw-lock-note{font-size:11.5px;color:var(--muted-2);line-height:1.45;margin-top:4px}
+
+.pw-input{height:36px;padding:0 11px;border:1.5px solid var(--border-soft);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:13.5px;outline:none;min-width:0}
+.pw-input:focus{border-color:var(--accent)}
+.pw-err{align-self:stretch;font-size:12.5px;color:var(--danger);text-align:left}
+.pw-err[hidden]{display:none}
+
+/* ---- hộp thoại Password Protection ---- */
+.pw-modal{max-width:420px}
+.pw-body{display:flex;flex-direction:column;gap:12px;padding:16px}
+.pw-desc{font-size:13.5px;color:var(--ink);line-height:1.5}
+.pw-field{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--ink-strong)}
+.pw-field[hidden]{display:none}
+.pw-warn{font-size:12px;line-height:1.5;color:var(--muted);padding:9px 11px;border-radius:8px;background:color-mix(in srgb,#f59f00 12%,var(--panel))}
+.pw-warn[hidden]{display:none}
+
+/* menu Translate ▾ / Password ▾ */
+.rv-menu{min-width:250px}
+.rv-menu .dv-menu-row{font-size:13px;padding:8px 10px}
+.rv-menu .dv-menu-row small{margin-left:8px}
+
+/* ---- khung Translator (nổi bên phải, không chặn trang — như ngăn Translator của Word) ---- */
+.tr-pane{position:fixed;z-index:70;right:16px;top:116px;width:340px;max-width:calc(100vw - 32px);max-height:calc(100vh - 132px);display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;box-shadow:0 14px 40px rgba(9,22,60,.18);color:var(--ink)}
+.tr-pane[hidden]{display:none}
+.tr-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.tr-title{font-size:15px;font-weight:700;color:var(--ink-strong)}
+.tr-body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:12px 14px}
+.tr-lang{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.tr-lang b{color:var(--ink-strong);font-weight:600}
+.tr-lang select{flex:1;height:30px;border:1.5px solid var(--border-soft);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px}
+.tr-go{height:30px}
+.tr-text{min-height:96px;max-height:190px;resize:vertical;padding:9px 10px;border:1.5px solid var(--border-soft);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:13.5px;line-height:1.5;outline:none}
+.tr-text:focus{border-color:var(--accent)}
+.tr-text[readonly]{background:var(--soft)}
+.tr-out{min-height:96px;padding:10px;border-radius:8px;background:color-mix(in srgb,var(--accent) 6%,var(--panel));font-size:13.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.tr-ph{color:var(--muted-2)}
+.tr-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:11px 14px;border-top:1px solid var(--border)}
+.tr-foot .btn-solid[hidden]{display:none}
+.tr-note{margin-left:auto;font-size:11px;color:var(--muted-2)}
+@media print{.tr-pane,.pw-lock{display:none!important}}

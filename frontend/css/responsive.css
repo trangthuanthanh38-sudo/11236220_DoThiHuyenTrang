@@ -1,0 +1,261 @@
+/* ======================================================================
+   responsive.css — Responsive Design cho trang soạn thảo ghichu.html (+ mọi công cụ Studio nạp vào đó).
+   Nạp CUỐI CÙNG trong <head> của ghichu.html để ghi đè. File này CHỈ chứa @media — desktop dùng chuột
+   (≥ 1024px, pointer:fine) không khớp quy tắc nào, nên bố cục / chức năng trên máy tính giữ nguyên.
+
+   Breakpoint (khớp TREE_COL_MIN / STUDIO_COL_MIN trong js/ghichu.js):
+     ≥ 1024px        Desktop  — 3 cột: Notebook | trang soạn thảo | Studio (như cũ)
+     880 – 1023px    Tablet ngang / laptop nhỏ — Notebook vẫn là cột, Studio thành NGĂN KÉO trượt từ phải
+     768 – 879px     Tablet dọc — Notebook cũng thành ngăn kéo trượt từ trái (nút ☰ #btn-tree)
+     ≤ 767px         Điện thoại — bố cục 1 cột, ribbon cuộn ngang 1 hàng, form công cụ Studio 1 cột
+     ≤ 480px         Điện thoại nhỏ — gọn thêm khoảng cách / cỡ chữ tiêu đề
+     pointer:coarse  Màn cảm ứng (iPad / điện thoại, mọi bề rộng) — vùng chạm ≥ 40px, nút "⋯" luôn bấm được
+
+   Mọi khối ghi `screen and` để KHÔNG ăn vào bản In / Xuất PDF (khổ giấy in hẹp hơn 768px).
+   Ngăn kéo: .sidebar.is-drawer / .studio.is-drawer do updateWorkspaceCols() (js/ghichu.js) gắn; z-index 36
+   nằm DƯỚI menu ngữ cảnh (40), dropdown (60) và hộp thoại (≥ 50) để menu mở từ trong ngăn kéo vẫn nổi lên trên.
+   ====================================================================== */
+
+/* ---------- Ngăn kéo + nền mờ (mặc định ẩn ở mọi cỡ, chỉ hiện khi JS bật) ---------- */
+.btn-tree{display:none}
+.tk-pane .tk-menu,.tk-pane .tk-scrim{display:none}
+.drawer-backdrop{position:fixed;inset:0;z-index:35;background:rgba(9,15,34,.38);-webkit-tap-highlight-color:transparent}
+.drawer-backdrop[hidden]{display:none}
+@keyframes td-drawer-in-left{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes td-drawer-in-right{from{transform:translateX(100%)}to{transform:none}}
+
+/* ======================= ≤ 1023px: Tablet + điện thoại ======================= */
+@media screen and (max-width:1023px){
+  /* Cột Studio -> ngăn kéo phải (đè lên nội dung, không bóp cột giữa) */
+  .studio.is-drawer{
+    position:fixed;top:0;right:0;bottom:0;z-index:36;width:min(340px,88vw);
+    border-radius:0;border:0;border-left:1px solid var(--border);
+    box-shadow:-12px 0 32px rgba(9,22,60,.18);animation:td-drawer-in-right .2s ease-out;
+    padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)
+  }
+  /* Thẻ công cụ trong ngăn kéo: to hơn cho dễ chạm */
+  .studio.is-drawer .studio-card{padding:11px 12px;gap:7px}
+  .studio.is-drawer .studio-card-label{font-size:12.5px}
+
+  /* Ribbon (thanh công cụ): tablet được XẾP NHIỀU HÀNG thay vì cuộn ngang ẩn chức năng —
+     mọi nhóm lệnh đều nhìn thấy, mỗi nhóm giữ nguyên trên 1 hàng. */
+  .ribbon{flex-wrap:wrap;row-gap:4px}
+
+  /* Thanh đầu trình soạn thảo: tên Môn/Chương co lại, thanh zoom / tìm kiếm không đẩy tràn */
+  .editor-head{flex-wrap:wrap;row-gap:6px}
+  .editor-head .crumb-subject,.editor-head .crumb-chapter{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .editor-head .crumb-subject{max-width:30%}
+  .editor-head-actions{flex-wrap:wrap;justify-content:flex-end}
+
+  /* ==== Thống kê: thanh menu trái navy -> NGĂN KÉO trượt từ trái (nút ☰ #tk-menu), giống ngăn kéo Notebook.
+     Bấm "Tổng quan" thả / thu danh sách mục; chọn 1 mục thì ngăn kéo tự đóng (initThongke() ở ghichu_thongke.js). ==== */
+  .tk-pane{grid-template-columns:minmax(0,1fr)}
+  .tk-pane .top{grid-column:1;padding:0 16px 0 8px;gap:8px}
+  .tk-pane #tk-main{grid-column:1}
+  .tk-pane .crumb{min-width:0;overflow:hidden;white-space:nowrap}
+  .tk-pane .tk-menu{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:9px;color:var(--ink)}
+  .tk-pane .tk-menu:hover,.tk-pane.sb-open .tk-menu{background:var(--hover)}
+  .tk-pane .sb{
+    position:absolute;top:0;left:0;bottom:0;z-index:40;width:min(280px,84vw);
+    transform:translateX(-105%);transition:transform .22s ease-out,visibility .22s;visibility:hidden
+  }
+  .tk-pane.sb-open .sb{transform:none;visibility:visible;box-shadow:12px 0 32px rgba(9,22,60,.28)}
+  .tk-pane.sb-open .tk-scrim{display:block;position:absolute;inset:0;z-index:39;background:rgba(9,15,34,.38)}
+  .tk-pane .sb .nav,.tk-pane .sb .sub{min-height:40px}
+
+  /* Bảng thông báo / dịch thuật nổi: không vượt bề ngang màn hình */
+  .tr-pane{width:min(340px,calc(100vw - 24px));right:12px}
+}
+
+/* ======================= ≤ 879px: Tablet dọc + điện thoại ======================= */
+@media screen and (max-width:879px){
+  .btn-tree{
+    flex:0 0 auto;display:grid;place-items:center;width:36px;height:36px;margin-right:4px;padding:0;
+    background:none;border:0;border-radius:9px;color:var(--ink);cursor:pointer
+  }
+  .btn-tree:hover,.btn-tree.is-open{background:var(--hover)}
+  /* Cây Notebook -> ngăn kéo trái */
+  .sidebar.is-drawer{
+    position:fixed;top:0;left:0;bottom:0;z-index:36;width:min(320px,86vw);
+    border-radius:0;border:0;border-right:1px solid var(--border);
+    box-shadow:12px 0 32px rgba(9,22,60,.18);animation:td-drawer-in-left .2s ease-out;
+    padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)
+  }
+  .workspace{gap:10px;padding:10px 12px}
+
+  /* Lịch biểu: cột trái bị ẩn ở ≤ 900px (ghichu_lichbieu.css) -> giữ lại nút "Thêm sự kiện" thành nút nổi */
+  .lb-pane .lb-side{display:block;flex:0 0 0;width:0;overflow:visible;padding:0;margin:0}
+  .lb-pane .lb-side > :not(#lb-add){display:none}
+  .lb-pane .lb-side > #lb-add{
+    position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:30;
+    height:48px;padding:0 20px;border-radius:24px;box-shadow:0 8px 22px rgba(10,26,77,.28)
+  }
+  .lb-body{gap:0;padding:12px 14px 16px}
+}
+
+/* ======================= ≤ 767px: Điện thoại ======================= */
+@media screen and (max-width:767px){
+  html,body{overscroll-behavior-y:none}
+  .app{height:100vh;height:100dvh} /* dvh: không bị thanh địa chỉ di động che mất đáy trang */
+  .workspace{gap:0;padding:0}
+  .workspace > .editor-pane{border:0;border-radius:0}
+
+  /* ---- Thanh thẻ trên cùng ---- */
+  .tabstrip{height:46px;padding:0 6px 0 4px;gap:0;scrollbar-width:none}
+  .tabstrip::-webkit-scrollbar{display:none}
+  .tabstrip .brand{display:none}
+  .topbar-actions{gap:4px;position:sticky;right:0;padding-left:6px;background:var(--bg)}
+  /* Chia sẻ / Studio: chỉ còn biểu tượng (chữ là text node -> thu cỡ chữ về 0) */
+  .topbar-actions .btn-chip{font-size:0;gap:0;width:36px;height:34px;padding:0;justify-content:center}
+  .topbar-actions .btn-chip svg{width:17px;height:17px}
+
+  /* ---- Ribbon: 1 hàng cuộn ngang mượt (vuốt), không thanh cuộn, mờ dần ở mép phải báo còn lệnh ---- */
+  .ribbon{
+    flex-wrap:nowrap;padding:6px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;scroll-padding:0 8px;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);
+            mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)
+  }
+  .ribbon::-webkit-scrollbar{display:none}
+  .ribbon-group{scroll-snap-align:start}
+
+  /* ---- Thanh đầu + vùng soạn thảo ---- */
+  .editor-head{padding:8px 12px;gap:6px}
+  .editor-head .crumb-subject{max-width:35%}
+  .editor-head .status-pill{display:none}
+  .editor-scroll{padding:16px 12px 48px}
+  .editor-shell{min-height:50vh}
+  .editor-empty-text{max-width:min(360px,90vw)}
+
+  /* ---- Nội dung ghi chú: không tràn ngang ---- */
+  .editor-shell .ck-content{overflow-wrap:anywhere;word-break:normal}
+  .editor-shell .ck-content figure.image,.editor-shell .ck-content figure.image_resized{max-width:100% !important}
+  .editor-shell .ck-content figure.image img{max-width:100%;height:auto}
+  .editor-shell .ck-content figure.image[style*="margin-left"]{margin-left:0 !important} /* "Vị trí tự do": về lề trái */
+  .editor-shell .ck-content figure.table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* Bảng nhiều cột: mỗi ô rộng tối thiểu ~5 chữ -> bảng cuộn ngang trong khung của nó, không bị bóp 1 chữ / dòng */
+  .editor-shell .ck-content figure.table :is(td,th){min-width:5.5em}
+  .editor-shell .ck-content pre{max-width:100%;overflow-x:auto;white-space:pre}
+
+  /* ---- PDF: trang vừa bề ngang (tỉ lệ do pdfDefaultScale() tính), khoảng cách gọn ---- */
+  .pdf-pages-scroll{gap:12px;padding-bottom:28px}
+  .pdf-page-block{max-width:100%}
+  #pdf-page-indicator{white-space:nowrap}
+
+  /* ---- Hỏi đáp tri thức ---- */
+  .chat-pane-head{height:52px;padding:0 10px}
+  .chat-pane-scroll{padding:16px 12px 14px}
+  .chat-pane-inputbar{padding:0 10px max(12px,env(safe-area-inset-bottom))}
+  .chat-composer{width:100%}
+  .chat-mention,.chat-scope-menu{min-width:0;max-width:calc(100vw - 24px)}
+  .chat-thread{gap:14px}
+
+  /* ---- Menu / dropdown / hộp thoại: luôn nằm gọn trong màn hình ---- */
+  .dd-panel,.ctx-menu{max-width:calc(100vw - 16px);max-height:calc(100dvh - 24px);overflow:auto}
+  .nguon-picker,.dv-bg-menu{min-width:0;max-width:calc(100vw - 24px)}
+  .sh-dialog,.sh-dialog--sm,.cl-modal,.lb-modal,.lb-confirm,.tt-modal,.ts-modal,.tk-pane .modal{
+    width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow:auto
+  }
+  .sketch-modal,.info-modal,.link-modal,.profile-modal,.settings-modal,.pw-modal,.table-custom-modal{
+    max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow:auto
+  }
+  .lb-pop{width:min(352px,calc(100vw - 24px)) !important}
+  .lb-notif{width:auto;left:12px;right:12px}
+  .lb-alerts{right:12px;bottom:max(12px,env(safe-area-inset-bottom));width:calc(100vw - 24px)}
+  .link-pop{max-width:calc(100vw - 16px)}
+
+  /* ==== Công cụ Studio chiếm trọn màn (Ôn tập / Thi thử / Flashcard / Sơ đồ / Tóm tắt) — khuôn CSS chung ==== */
+  /* Thanh trên: × | tiêu đề | tab Tạo mới / Đã tạo | nút chính -> xuống hàng khi chật */
+  :is(.ontap-head,.tt-head,.fc-head,.mm-head,.ts-head){flex-wrap:wrap;gap:8px 14px;padding:10px 12px}
+  :is(.ontap-head-titles,.tt-head-titles,.fc-head-titles,.mm-head-titles,.ts-head-titles){min-width:0;flex:1 1 auto}
+  :is(.ontap-title,.tt-title,.fc-title,.mm-title,.ts-title){font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  :is(.ontap-head,.tt-head,.fc-head,.mm-head,.ts-head) :is(.ontap-tabbar,.tt-tabbar,.fc-tabbar,.mm-tabbar,.ts-tabbar){margin-left:0;order:3;flex:1 1 100%}
+  :is(.ontap-head,.tt-head,.fc-head,.mm-head,.ts-head) :is(.ontap-tabs,.tt-tabs,.fc-tabs,.mm-tabs,.ts-tabs){gap:18px}
+  :is(.ontap-head-note,.tt-head-note,.fc-head-note,.mm-head-note,.ts-head-note){display:none}
+  :is(.ontap-head-right,.tt-head-right,.fc-head-right,.mm-head-right,.ts-head-right){gap:8px}
+  :is(.ontap-head-right,.tt-head-right,.fc-head-right,.mm-head-right,.ts-head-right) :is(.ontap-btn-primary,.tt-btn-primary,.fc-btn-primary,.mm-btn-primary,.ts-btn-primary){white-space:nowrap}
+  .ts-saved{display:none}
+  .ts-title-in{font-size:18px !important}
+
+  /* Form Tạo mới: 2 cột -> 1 cột, ô Tên / Số lượng xếp dọc */
+  :is(.ontap-form,.tt-form,.fc-form,.mm-form,.ts-form){grid-template-columns:minmax(0,1fr);gap:14px;padding:14px 12px 28px}
+  :is(.ontap-fields,.tt-fields,.fc-fields,.mm-fields,.ts-fields){flex-direction:column}
+  :is(.ontap-f-count,.tt-f-count,.fc-f-count,.mm-f-count,.ts-f-count){width:auto}
+  :is(.ontap-select,.tt-select,.fc-select,.mm-select,.ts-select) > button b{max-width:42vw}
+  :is(.ontap-tabbar-in,.tt-tabbar-in,.fc-tabbar-in,.mm-tabbar-in,.ts-tabbar-in){padding:10px 12px 0}
+  .ts-fmts{flex-direction:column}
+
+  /* Làm bài / ôn thẻ / kết quả */
+  :is(.ontap-quiz,.tt-quiz,.fc-quiz,.mm-quiz,.ts-quiz,.fc-study){padding:14px 12px 24px;gap:14px}
+  :is(.ontap-done,.tt-done,.fc-done){min-height:0;padding:16px 12px}
+  :is(.ontap-stats,.tt-stats,.fc-stats){flex-wrap:wrap;gap:8px}
+  :is(.ontap-stat,.tt-stat,.fc-stat){flex:1 1 calc(50% - 4px)}
+  :is(.ontap-quiz-foot,.tt-quiz-foot,.fc-quiz-foot,.mm-quiz-foot,.ts-quiz-foot){flex-wrap:wrap}
+  :is(.ontap-done-foot,.tt-done-foot,.fc-done-foot) p{min-width:0;flex-basis:100%}
+  :is(.ontap-list,.tt-list,.fc-list,.mm-list,.ts-list){padding:14px 12px 28px}
+  .tt-exam{padding:14px 12px 24px;gap:14px}
+  .tt-sidebar{position:static;flex:none;width:100%}
+  .fc-face{padding:18px 18px;border-radius:18px}
+
+  /* Đã tạo dạng thẻ (cardlist + Tóm tắt): 1 cột */
+  .cl-cards,.ts-cards{grid-template-columns:minmax(0,1fr)}
+
+  /* Sơ đồ tư duy: bảng "Node đang chọn" thành tấm dưới đáy khung vẽ, thanh công cụ gọn */
+  .mm-npanel{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:46%}
+  .mm-toolbar{left:8px;top:8px;right:8px;flex-wrap:wrap;font-size:13px}
+  .mm-cnotice{left:8px;right:8px;top:auto;bottom:8px;flex-wrap:wrap;gap:8px}
+  .mm-chint{display:none}
+
+  /* Tóm tắt — Xem song song: chồng 2 cột */
+  .ts-split{grid-template-columns:minmax(0,1fr)}
+
+  /* Lịch biểu */
+  .lb-head{padding:10px 12px}
+  .lb-body{padding:8px 8px 12px}
+  .lb-frow > .lb-lb{width:84px}
+
+  /* Dọn dung lượng: bảng tệp còn 3 cột (chọn · tên · dung lượng) */
+  .hm-tr{grid-template-columns:30px minmax(0,1fr) 76px;padding:0 10px}
+  .hm-tr > :nth-child(3),.hm-tr > :nth-child(4){display:none}
+
+  /* Thống kê — điện thoại: lưới thẻ 1 cột, ẩn tên tài khoản (thanh menu trái là ngăn kéo, xem khối ≤ 1023px) */
+  .tk-pane .top .user{font-size:0;gap:0} /* chỉ còn ảnh đại diện (tên là text node) */
+  .tk-pane .top .user i{font-size:13.5px}
+  .tk-pane #tk-main{padding:14px 12px 20px}
+  .tk-pane .grid3{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ======================= ≤ 480px: Điện thoại nhỏ ======================= */
+@media screen and (max-width:480px){
+  .editor-head .crumb-sep,.editor-head .crumb-subject{display:none}
+  .editor-scroll{padding:12px 10px 40px}
+  :is(.ontap-head,.tt-head,.fc-head,.mm-head,.ts-head) :is(.ontap-title,.tt-title,.fc-title,.mm-title,.ts-title){display:none}
+  :is(.ontap-stat,.tt-stat,.fc-stat){flex-basis:100%}
+  .lb-frow > .lb-lb{width:100%}
+}
+
+/* ======================= Màn cảm ứng (iPad / điện thoại) ======================= */
+@media (pointer:coarse){
+  /* Vùng chạm tối thiểu ~40px (khuyến nghị Apple 44pt / Material 48dp) */
+  .ribbon-btn{height:40px;padding:0 12px}
+  .ribbon-btn-caret{height:40px;width:22px}
+  .tabs > *{min-height:44px}
+  .icon-btn-sm,.btn-noti,.btn-chip{min-height:36px;min-width:36px}
+  .tree-row-btn{padding:11px 8px}
+  .chapter-row-btn{padding:10px 9px}
+  .menu-btn,.chapter-menu-btn{width:34px;height:34px}
+  .studio-chat-item-open{padding:10px}
+  .studio-chat-item-menu{width:34px;height:34px}
+  .sketch-tool{min-width:34px;min-height:34px}
+  /* Không có rê chuột trên màn cảm ứng: bỏ hiệu ứng "dính" :hover sau khi chạm */
+  .studio-card:hover{filter:none}
+  /* Kéo-cuộn mượt trong các vùng cuộn chính */
+  .tree-scroll,.editor-scroll,.studio-body,.chat-pane-scroll{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* Chạm 2 lần không phóng to trang (nhưng vẫn cho phép pinch-zoom) */
+  button,a,[role="button"]{touch-action:manipulation}
+}
+
+/* ======================= Giảm chuyển động ======================= */
+@media (prefers-reduced-motion:reduce){
+  .sidebar.is-drawer,.studio.is-drawer{animation:none}
+}

@@ -1,0 +1,20 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: kltn-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: devpassword
+      MYSQL_DATABASE: ai_studio_tri_thuc
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Mọi file .sql trong ./database được MySQL tự chạy theo thứ tự bảng chữ cái
+      # NHƯNG chỉ trong lần khởi tạo đầu tiên (khi volume mysql_data còn trống).
+      # Nếu sửa schema sau này, phải xoá volume (xem lệnh reset bên dưới) để nó
+      # chạy lại từ đầu, hoặc tự apply file .sql mới bằng tay.
+      - ./database:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  mysql_data:

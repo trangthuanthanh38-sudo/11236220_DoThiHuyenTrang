@@ -1,0 +1,336 @@
+/* ======================================================================
+   ghichu_thongke.css — MODULE "Thống kê hiệu suất" (UC-29 + Nhận xét AI UC-30): diện mạo RIÊNG của #tk-pane
+   (html/ghichu_thongke.frag, logic js/ghichu_thongke.js). GIỮ NGUYÊN bố cục mẫu `thong-ke.html` (thanh trái navy
+   Tổng quan / Notebook, thanh trên breadcrumb, các trang). Khác mẫu:
+     - Không còn khung cố định 1440×1024 + zoom: pane là grid co giãn theo cột giữa thật; mọi selector có tiền tố
+       .tk-pane (mẫu dùng tên chung .card/.btn/.row… sẽ đụng ghichu.css).
+     - Kích thước thu về thang chữ của app (mẫu chữ 18–21px -> ×0,78).
+     - Màu là token (ghichu.css + --tk-* bên dưới) nên chạy cả giao diện Tối (UC-09). Biểu đồ SVG vẽ màu bằng
+       style="fill:var(--…)" để đổi theo theme.
+   Phần "Sinh tự động" bên dưới tạo từ <style> của mẫu (tiền tố + ×0,78 + token) — sửa giao diện thì sửa ở đây.
+   ====================================================================== */
+.tk-pane{
+  --tk-navy:#0a1a4d;--tk-navy-h:#050e2e;--tk-on-navy:#fff;
+  --tk-soft:#edf1f7;--tk-soft-line:#c7cfe0;--tk-chip:#f2f2f2;--tk-track:#eef1f4;
+  --tk-green:#298052;--tk-red:#b83d38;--tk-amber:#9a5b12;
+  --tk-good-bg:#e6f2ea;--tk-warn-bg:#fbefe1;--tk-err-bg:#fcf2f1;--tk-err-line:#f0cfcd;--tk-info-line:#d3dceb;
+  --tk-ai-line:#c9d4e8;--tk-g1:#f3f8f4;--tk-g2:#fdf7ee;--tk-g3:#f2f5fa;
+  --tk-sk1:#e6eaf0;--tk-sk2:#dce2ea;--tk-sk3:#f1f3f7;--tk-on-solid-sub:#c9d0e0;
+  --tk-side-bg:#0a1a4d;--tk-side-text:#b5baca;--tk-side-hover:rgba(255,255,255,.06);--tk-side-on:rgba(255,255,255,.12);
+  --tk-chart-text:#696868;--tk-chart-strong:#1a1a1a;--tk-chart-grid:#e3e8ef;--tk-series:#0e5c8f;--tk-prev:#9aa3b2;
+  position:relative;flex:1;min-height:0;display:grid;grid-template-columns:clamp(176px,16%,200px) minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr);background:var(--bg);color:var(--ink);font-size:14.5px;line-height:1.4;overflow:hidden
+}
+:root[data-theme="dark"] .tk-pane{
+  --tk-navy:#dfe6f7;--tk-navy-h:#ffffff;--tk-on-navy:#0e1420;
+  --tk-soft:#1d2640;--tk-soft-line:#3a4666;--tk-chip:#222b3f;--tk-track:#26304a;
+  --tk-green:#5cc08a;--tk-red:#f07b76;--tk-amber:#e0a95a;
+  --tk-good-bg:#16301f;--tk-warn-bg:#2d2412;--tk-err-bg:#2c1719;--tk-err-line:#5a2b2b;--tk-info-line:#2f3b5a;
+  --tk-ai-line:#34405f;--tk-g1:#15261c;--tk-g2:#2a2214;--tk-g3:#18213a;
+  --tk-sk1:#222b3f;--tk-sk2:#2a3550;--tk-sk3:#1c2436;--tk-on-solid-sub:#c9d0e0;
+  --tk-side-bg:#0f1730;
+  --tk-chart-text:#8f9ab4;--tk-chart-strong:#e8ecf5;--tk-chart-grid:#2a3550;--tk-series:#5aa7dc;--tk-prev:#6f7996;
+}
+.tk-pane[hidden],.tk-pane [hidden]{display:none !important}
+.tk-pane *{box-sizing:border-box}
+.tk-pane :where(button,input){font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;margin:0}
+.tk-pane :where(input){cursor:text;outline:none}
+.tk-pane :where(h1,h2,h3,h4,p,ul){margin:0;padding:0}
+.tk-pane svg text{font-family:inherit}
+
+/* ===== Bố cục (viết lại: grid thay cho định vị tuyệt đối của mẫu) ===== */
+.tk-pane .sb{grid-row:1 / span 2;background:var(--tk-side-bg);padding:19px 12.5px;display:flex;flex-direction:column;gap:3px;overflow-y:auto;scrollbar-width:thin}
+.tk-pane .top{grid-column:2;height:56px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:15.5px;padding:0 25px 0 16px}
+.tk-pane .tk-close{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--ink);flex:none}
+.tk-pane .tk-close:hover{background:var(--hover)}
+.tk-pane #tk-main{grid-column:2;overflow-y:auto;scrollbar-gutter:stable;padding:19px 25px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.tk-pane .chart-tip{position:absolute;pointer-events:none;background:var(--tk-navy);color:var(--tk-on-navy);font-size:12.5px;padding:6px 9.5px;border-radius:8px;white-space:nowrap;z-index:30;box-shadow:0 6px 16px rgba(10,26,77,.2)}
+.tk-pane .toast{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:var(--tk-navy);color:var(--tk-on-navy);font-size:14.5px;padding:8px 15.5px;border-radius:16px;z-index:60}
+/* ===== Sinh tự động từ thong-ke.html (tiền tố .tk-pane, ×0,78, token màu) ===== */
+/* ===== Thanh menu trái ===== */
+.tk-pane .logo { display: flex; align-items: center; gap: 8px; padding: 0 8px 18.5px; color: #fff; font-size: 18.5px; font-weight: 600; }
+.tk-pane .logo i { width: 26.5px; height: 26.5px; border-radius: 8px; background: var(--tk-side-on); display: grid; place-items: center; }
+.tk-pane .nav { display: flex; align-items: center; gap: 11px; width: 100%; padding: 8.5px 9.5px; border-radius: 8px; color: var(--tk-side-text); font-size: 15px; text-align: left; }
+.tk-pane .nav svg { flex: none; }
+.tk-pane .nav span { flex: 1; }
+.tk-pane .nav:hover { background: var(--tk-side-hover); color: #fff; }
+.tk-pane .nav.on { background: var(--tk-side-on); color: #fff; font-weight: 500; }
+.tk-pane .nav.open { color: #fff; font-weight: 500; }
+.tk-pane .nav .chev { transition: transform .2s; }
+.tk-pane .nav.open .chev { transform: rotate(90deg); }
+.tk-pane .subs { margin: 0 0 4.5px 17px; padding-left: 9.5px; border-left: 1.5px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 2px; }
+.tk-pane .sub { padding: 6px 9.5px; border-radius: 6px; color: var(--tk-side-text); font-size: 14px; text-align: left; }
+.tk-pane .sub:hover:not(:disabled) { background: var(--tk-side-hover); color: #fff; }
+.tk-pane .sub.on { background: var(--tk-side-on); color: #fff; font-weight: 500; }
+.tk-pane .sub:disabled { opacity: .4; cursor: not-allowed; }
+.tk-pane .sb .grow { flex: 1; }
+/* ===== Thanh trên ===== */
+.tk-pane .crumb { flex: 1; display: flex; gap: 8px; font-size: 15px; color: var(--muted); }
+.tk-pane .crumb b { color: var(--ink); font-weight: 500; }
+.tk-pane .crumb button:hover { color: var(--tk-navy); text-decoration: underline; }
+.tk-pane .bell { position: relative; width: 33px; height: 33px; border-radius: 50%; background: var(--tk-chip); display: grid; place-items: center; }
+.tk-pane .bell::after { content: ""; position: absolute; right: 7px; top: 6px; width: 6px; height: 6px; border-radius: 50%; background: #CC3833; border: 1.5px solid var(--tk-chip); }
+.tk-pane .user { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; }
+.tk-pane .user i { width: 33px; height: 33px; border-radius: 50%; background: var(--tk-soft); color: var(--tk-navy); font-style: normal; font-weight: 600; font-size: 13.5px; display: grid; place-items: center; }
+/* ===== Vùng nội dung ===== */
+.tk-pane .ph { display: flex; align-items: flex-end; gap: 12.5px; }
+.tk-pane .ph .t { flex: 1; min-width: 0; }
+.tk-pane .ph h1 { font-size: 25px; font-weight: 500; line-height: 1.3; }
+.tk-pane .ph .sub2 { font-size: 15px; color: var(--muted); }
+.tk-pane .ph .upd { font-size: 14px; color: var(--muted); white-space: nowrap; }
+.tk-pane .ph .nb-ic { width: 47px; height: 47px; border-radius: 13.5px; display: grid; place-items: center; flex: none; align-self: center; }
+.tk-pane .row { display: flex; gap: 18.5px; align-items: stretch; }
+.tk-pane .col { display: flex; flex-direction: column; gap: 18.5px; }
+.tk-pane .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 16.5px; font-weight: 500; padding: 11px 25px; border-radius: 23.5px; white-space: nowrap; background: var(--tk-navy); color: #fff; transition: background .15s, opacity .15s; }
+.tk-pane .btn:hover { background: var(--tk-navy-h); }
+.tk-pane .btn:disabled { opacity: .35; cursor: not-allowed; }
+.tk-pane .btn.sec { background: var(--panel); color: var(--ink); border: 1px solid var(--muted-3); padding: 10px 22px; }
+.tk-pane .btn.sec:hover { background: var(--hover); }
+.tk-pane .btn.sm { font-size: 14px; padding: 7px 15.5px; }
+.tk-pane .link { color: var(--tk-navy); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; font-size: 13.5px; white-space: nowrap; }
+.tk-pane .link:hover { color: var(--tk-navy-h); }
+/* Bộ lọc thời gian */
+.tk-pane .filters { display: flex; align-items: center; gap: 9.5px; position: relative; }
+.tk-pane .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 15.5px; border-radius: 17px; background: var(--panel); border: 1px solid var(--border); font-size: 15px; white-space: nowrap; }
+.tk-pane .pill:hover:not(.on) { border-color: var(--muted-3); }
+.tk-pane .pill.on { background: var(--tk-soft); border: 1.5px solid var(--tk-navy); padding: 6px 15px; color: var(--tk-navy); font-weight: 500; }
+.tk-pane .range { display: flex; align-items: center; gap: 6px; padding-left: 6px; color: var(--muted); font-size: 15px; }
+.tk-pane .filters.ro { opacity: .4; pointer-events: none; }
+/* Thẻ */
+.tk-pane .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12.5px; padding: 15.5px 18.5px 18.5px; display: flex; flex-direction: column; gap: 12.5px; min-width: 0; }
+.tk-pane .card > .hd { display: flex; align-items: center; gap: 9.5px; }
+.tk-pane .card > .hd h3 { flex: 1; font-size: 16.5px; font-weight: 500; }
+.tk-pane .card > .hd .note { font-size: 13.5px; color: var(--muted); }
+.tk-pane .info { width: 14px; height: 14px; flex: none; color: var(--muted-2); cursor: help; }
+.tk-pane .kpis { display: flex; gap: 18.5px; }
+.tk-pane .kpi { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 12.5px; padding: 15.5px 18.5px; display: flex; flex-direction: column; gap: 4.5px; min-width: 0; }
+.tk-pane .kpi .kh { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); white-space: nowrap; min-width: 0; }
+.tk-pane .kpi .kh span { overflow: hidden; text-overflow: ellipsis; }
+.tk-pane .kpi .kh i { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.tk-pane .kpi .v { font-size: 23.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tk-pane .kpi .d { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tk-pane .kpi .n { font-size: 13.5px; color: var(--muted); line-height: 1.4; min-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tk-pane .up { color: var(--tk-green); }
+.tk-pane .down { color: var(--tk-red); }
+.tk-pane .flat { color: var(--muted); }
+.tk-pane .stats { display: flex; gap: 37.5px; }
+.tk-pane .stat .l { font-size: 14px; color: var(--muted); }
+.tk-pane .stat .v { font-size: 22px; font-weight: 500; }
+.tk-pane .stat .d { font-size: 13.5px; font-weight: 500; }
+.tk-pane .legend { display: flex; flex-wrap: wrap; gap: 4.5px 15.5px; font-size: 13.5px; }
+.tk-pane .legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tk-pane .legend i { width: 9.5px; height: 9.5px; border-radius: 2.5px; display: inline-block; }
+.tk-pane .legend i.ln { width: 17px; height: 2.5px; border-radius: 2px; }
+.tk-pane .legend i.dash { background: repeating-linear-gradient(90deg, var(--muted-2) 0 4px, transparent 4px 6px) !important; }
+.tk-pane .sel { display: inline-flex; align-items: center; gap: 8px; padding: 4.5px 9.5px 4.5px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); font-size: 13.5px; }
+.tk-pane .sel:hover { border-color: var(--muted-3); }
+.tk-pane .tag { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
+.tk-pane .tag.good { background: var(--tk-good-bg); color: var(--tk-green); }
+.tk-pane .tag.warn { background: var(--tk-warn-bg); color: var(--tk-amber); }
+.tk-pane .tag.gray { background: var(--tk-chip); color: var(--muted); }
+.tk-pane .tag.navy { background: var(--tk-navy); color: #fff; }
+.tk-pane .muted { color: var(--muted); }
+/* Xếp hạng */
+.tk-pane .rank { display: flex; flex-direction: column; }
+.tk-pane .rk { display: flex; align-items: center; gap: 9.5px; padding: 8.5px 0; border-top: 1px solid var(--border); }
+.tk-pane .rk:first-child { border-top: 0; }
+.tk-pane .rk .no { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--tk-soft); color: var(--tk-navy); font-size: 11.5px; font-weight: 600; flex: none; }
+.tk-pane .rk.first .no { background: var(--tk-navy); color: #fff; }
+.tk-pane .rk .mid { flex: 1; min-width: 0; }
+.tk-pane .rk .nm { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 6px; font-size: 14px; font-weight: 500; }
+.tk-pane .rk .sm { font-size: 11.5px; color: var(--muted); }
+.tk-pane .rk .sc { text-align: right; }
+.tk-pane .rk .sc b { display: block; font-size: 17px; font-weight: 500; }
+.tk-pane .rk .sc span { font-size: 11.5px; font-weight: 500; }
+.tk-pane .rk.na .nm, .tk-pane .rk.na .sc b { color: var(--muted); }
+.tk-pane .rk.na .no { background: var(--tk-chip); color: var(--muted); }
+.tk-pane .foot { font-size: 11.5px; color: var(--muted); }
+.tk-pane .bars { display: flex; flex-direction: column; gap: 12.5px; }
+.tk-pane .bar .tp { display: flex; gap: 6px; align-items: flex-end; margin-bottom: 4.5px; }
+.tk-pane .bar .tp .nm { flex: 1; font-size: 14px; min-width: 0; }
+.tk-pane .bar .tp .nm small { display: block; font-size: 11.5px; color: var(--muted); }
+.tk-pane .bar .tp b { font-weight: 500; font-size: 13.5px; white-space: nowrap; }
+.tk-pane .bar .tp b.big { font-size: 17px; }
+.tk-pane .track { height: 9.5px; border-radius: 4.5px; background: var(--tk-track); overflow: hidden; }
+.tk-pane .track i { display: block; height: 100%; border-radius: 4.5px; }
+.tk-pane .total { display: flex; justify-content: space-between; font-size: 14px; padding-top: 2px; }
+.tk-pane .total span { color: var(--muted); }
+.tk-pane .total b { font-weight: 500; }
+.tk-pane .note-box { display: flex; gap: 8px; align-items: flex-start; background: var(--tk-chip); border-radius: 8px; padding: 6px 9.5px; font-size: 11.5px; color: var(--muted); }
+/* Ô "Cần thêm dữ liệu" (E1) và trạng thái trống (E3) */
+.tk-pane .hold { display: flex; align-items: center; gap: 31px; background: var(--panel); border: 1.5px dashed var(--tk-soft-line); border-radius: 12.5px; padding: 22px 25px; }
+.tk-pane .hold .tx { flex: 1; display: flex; flex-direction: column; gap: 11px; }
+.tk-pane .hold h3 { display: flex; align-items: center; gap: 9.5px; font-size: 16.5px; font-weight: 500; }
+.tk-pane .hold p { font-size: 14px; color: var(--muted); }
+.tk-pane .seg7 { display: flex; gap: 4.5px; }
+.tk-pane .seg7 i { width: 42px; height: 8px; border-radius: 4px; background: var(--border); }
+.tk-pane .seg7 i.on { background: var(--tk-navy); }
+.tk-pane .empty { background: var(--panel); border: 1px solid var(--border); border-radius: 15.5px; padding: 50px 37.5px; display: flex; flex-direction: column; align-items: center; gap: 12.5px; text-align: center; }
+.tk-pane .empty h2 { font-size: 18.5px; font-weight: 500; }
+.tk-pane .empty p { font-size: 14px; color: var(--muted); max-width: 499px; }
+/* Lịch sử */
+.tk-pane .htable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tk-pane .htable th { text-align: left; font-weight: 400; font-size: 12.5px; color: var(--muted); padding: 3px 8px 6px; }
+.tk-pane .htable td { padding: 8.5px 8px; border-top: 1px solid var(--border); white-space: nowrap; }
+.tk-pane .htable tr.cur td { background: var(--tk-soft); border-top-color: transparent; }
+.tk-pane .htable tr.cur td:first-child { border-radius: 8px 0 0 8px; }
+.tk-pane .htable tr.cur td:last-child { border-radius: 0 8px 8px 0; }
+.tk-pane .htable td.per b { font-weight: 500; display: block; }
+.tk-pane .htable td.per span { font-size: 11.5px; color: var(--muted); }
+.tk-pane .htable td:last-child, .tk-pane .htable th:last-child { text-align: right; }
+.tk-pane .ok { display: inline-flex; align-items: center; gap: 4.5px; color: var(--tk-green); font-size: 12.5px; }
+.tk-pane .pager { display: flex; align-items: center; gap: 11px; font-size: 13.5px; color: var(--muted); }
+.tk-pane .pager button { width: 25px; height: 25px; border-radius: 50%; border: 1px solid var(--border); display: grid; place-items: center; background: var(--panel); }
+.tk-pane .pager button:disabled { opacity: .35; cursor: not-allowed; }
+/* Nhận xét AI */
+.tk-pane .ai { background: var(--panel); border: 1.5px solid var(--tk-ai-line); border-radius: 12.5px; padding: 18.5px 22px; display: flex; flex-direction: column; gap: 15.5px; }
+.tk-pane .ai .ah { display: flex; align-items: center; gap: 12.5px; }
+.tk-pane .ai .ah .ic { width: 34.5px; height: 34.5px; border-radius: 50%; background: var(--tk-navy); display: grid; place-items: center; flex: none; }
+.tk-pane .ai .ah .ic.big { width: 43.5px; height: 43.5px; }
+.tk-pane .ai .ah .tt { flex: 1; min-width: 0; }
+.tk-pane .ai .ah h3 { font-size: 17px; font-weight: 500; }
+.tk-pane .ai .ah p { font-size: 13.5px; color: var(--muted); }
+.tk-pane .ai .cols { display: flex; gap: 15.5px; }
+.tk-pane .ai .grp { flex: 1; border-radius: 9.5px; padding: 14px 15.5px 15.5px; display: flex; flex-direction: column; gap: 9.5px; min-width: 0; }
+.tk-pane .ai .grp h4 { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+.tk-pane .ai .grp li { list-style: none; display: flex; gap: 8px; font-size: 13.5px; line-height: 1.45; }
+.tk-pane .ai .grp li b { font-weight: 500; flex: none; }
+.tk-pane .ai .grp p { font-size: 13.5px; }
+.tk-pane .g1 { background: var(--tk-g1); }
+.tk-pane .g1 h4, .tk-pane .g1 li b { color: var(--tk-green); }
+.tk-pane .g2 { background: var(--tk-g2); }
+.tk-pane .g2 h4, .tk-pane .g2 li b { color: var(--tk-amber); }
+.tk-pane .g3 { background: var(--tk-g3); }
+.tk-pane .g3 h4, .tk-pane .g3 li b { color: var(--tk-navy); }
+.tk-pane .ai .fine { font-size: 12.5px; color: var(--muted); }
+.tk-pane .sk { background: var(--hover); border-radius: 9.5px; padding: 15.5px; flex: 1; display: flex; flex-direction: column; gap: 9.5px; }
+.tk-pane .sk i { display: block; height: 11px; border-radius: 5.5px; background: linear-gradient(90deg, var(--tk-sk1) 25%, var(--tk-sk3) 50%, var(--tk-sk1) 75%); background-size: 300% 100%; animation: tk-sh 1.2s linear infinite; }
+.tk-pane .sk i.t { height: 15.5px; width: 117px; background-color: var(--tk-sk2); }
+@keyframes tk-sh { from { background-position: 100% 0; } to { background-position: -200% 0; } }
+.tk-pane .spin { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border); border-top-color: var(--tk-navy); animation: tk-rot .8s linear infinite; flex: none; }
+@keyframes tk-rot { to { transform: rotate(360deg); } }
+.tk-pane .msg { display: flex; gap: 12.5px; border-radius: 9.5px; padding: 15.5px 18.5px 17px; }
+.tk-pane .msg .tx { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+.tk-pane .msg h4 { font-size: 15px; font-weight: 600; }
+.tk-pane .msg.info { background: var(--tk-g3); border: 1px solid var(--tk-info-line); }
+.tk-pane .msg.info h4 { color: var(--tk-navy); }
+.tk-pane .msg.err { background: var(--tk-err-bg); border: 1px solid var(--tk-err-line); }
+.tk-pane .msg.err h4 { color: var(--tk-red); }
+.tk-pane .saved-tag { display: inline-flex; align-items: center; gap: 4.5px; background: var(--tk-good-bg); color: var(--tk-green); font-size: 12.5px; font-weight: 500; padding: 4.5px 11px; border-radius: 12.5px; }
+/* Banner snapshot */
+.tk-pane .banner { display: flex; align-items: center; gap: 11px; background: var(--tk-navy); color: #fff; border-radius: 9.5px; padding: 8px 12.5px 8px 15.5px; font-size: 14px; }
+.tk-pane .banner p { flex: 1; }
+.tk-pane .banner button { background: var(--panel); color: var(--tk-navy); font-weight: 500; font-size: 13.5px; padding: 5.5px 14px; border-radius: 15.5px; }
+/* Popover chọn khoảng thời gian */
+.tk-pane .pop { position: absolute; z-index: 40; background: var(--panel); border: 1px solid var(--border); border-radius: 12.5px; box-shadow: 0 12.5px 31px rgba(10,26,77,.16); display: flex; }
+.tk-pane .pop .pre { width: 203px; padding: 12.5px 9.5px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px; }
+.tk-pane .pop .pre button { display: flex; align-items: center; justify-content: space-between; padding: 8px 11px; border-radius: 8px; font-size: 14px; text-align: left; }
+.tk-pane .pop .pre button:hover { background: var(--hover); }
+.tk-pane .pop .pre button.on { background: var(--tk-soft); color: var(--tk-navy); font-weight: 500; }
+.tk-pane .pop .cr { padding: 15.5px 18.5px; display: flex; flex-direction: column; gap: 12.5px; }
+.tk-pane .cals { display: flex; gap: 22px; }
+.tk-pane .cal .mh { display: flex; align-items: center; justify-content: space-between; height: 25px; font-size: 14px; font-weight: 500; }
+.tk-pane .cal .mh button { width: 23.5px; height: 23.5px; border-radius: 50%; color: var(--muted); font-size: 17px; line-height: 1; }
+.tk-pane .cal .mh button:hover { background: var(--tk-chip); }
+.tk-pane .cal .g { display: grid; grid-template-columns: repeat(7, 31px); }
+.tk-pane .cal .dn { height: 23.5px; display: grid; place-items: center; font-size: 11.5px; color: var(--muted); }
+.tk-pane .cal .c { height: 28px; display: grid; place-items: center; font-size: 12.5px; }
+.tk-pane .cal .c button { width: 26.5px; height: 26.5px; border-radius: 50%; }
+.tk-pane .cal .c button:hover:not(:disabled) { background: var(--hover-strong); }
+.tk-pane .cal .c button:disabled { color: var(--muted-3); cursor: not-allowed; }
+.tk-pane .cal .c.in { background: var(--tk-soft); color: var(--tk-navy); }
+.tk-pane .cal .c.rs { border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
+.tk-pane .cal .c.re { border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
+.tk-pane .cal .c.s button, .tk-pane .cal .c.e button { background: var(--tk-navy); color: #fff; font-weight: 500; }
+.tk-pane .cal .c.today button { box-shadow: inset 0 0 0 1.5px var(--tk-navy); }
+.tk-pane .fields { display: flex; align-items: center; gap: 9.5px; }
+.tk-pane .fld { flex: 1; border: 1px solid var(--border); border-radius: 9.5px; padding: 6px 12.5px; }
+.tk-pane .fld.on { border: 1.5px solid var(--tk-navy); padding: 6px 12px; }
+.tk-pane .fld small { display: block; font-size: 11.5px; color: var(--muted); }
+.tk-pane .fld b { font-size: 14px; font-weight: 500; }
+.tk-pane .pop .hint { font-size: 12.5px; color: var(--muted); }
+.tk-pane .pop .hint.err { color: var(--tk-red); }
+.tk-pane .pop .ft { display: flex; justify-content: flex-end; gap: 9.5px; }
+/* Hôm nay & Notebook */
+.tk-pane .resume { display: flex; align-items: center; gap: 15.5px; }
+.tk-pane .nbic { border-radius: 28%; display: grid; place-items: center; flex: none; }
+.tk-pane .list .it { display: flex; align-items: center; gap: 12.5px; padding: 9.5px 0; border-top: 1px solid var(--border); width: 100%; text-align: left; }
+.tk-pane .list .it:first-child { border-top: 0; }
+.tk-pane .list .it:hover .nm { color: var(--tk-navy); text-decoration: underline; }
+.tk-pane .list .it .mid { flex: 1; }
+.tk-pane .list .it .nm { font-size: 15px; font-weight: 500; }
+.tk-pane .list .it small { display: block; font-size: 12.5px; color: var(--muted); }
+.tk-pane .ev { border-left: 3px solid; border-radius: 8px; padding: 8px 9.5px 8px 11px; }
+.tk-pane .ev b { display: block; font-size: 14px; font-weight: 500; }
+.tk-pane .ev span { font-size: 11.5px; color: var(--muted); }
+.tk-pane .ev.solid span { color: var(--tk-on-solid-sub); }
+.tk-pane .tabs { display: flex; gap: 28px; border-bottom: 1px solid var(--border); }
+.tk-pane .tabs button { display: flex; flex-direction: column; gap: 8px; padding-top: 3px; font-size: 15.5px; color: var(--muted); }
+.tk-pane .tabs button::after { content: ""; height: 2.5px; border-radius: 2px; background: transparent; }
+.tk-pane .tabs button.on { color: var(--tk-navy); font-weight: 500; }
+.tk-pane .tabs button.on::after { background: var(--tk-navy); }
+.tk-pane .tabs button:hover:not(.on) { color: var(--ink); }
+.tk-pane .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18.5px; }
+.tk-pane .nbcard { background: var(--panel); border: 1px solid var(--border); border-radius: 12.5px; overflow: hidden; display: flex; flex-direction: column; text-align: left; transition: box-shadow .15s; }
+.tk-pane .nbcard:hover { box-shadow: 0 6px 17px rgba(10,26,77,.1); }
+.tk-pane .nbcard .cv { display: flex; align-items: center; gap: 9.5px; padding: 14px 15.5px; }
+.tk-pane .nbcard .cv b { flex: 1; font-size: 17px; font-weight: 500; }
+.tk-pane .nbcard .bd { padding: 12.5px 15.5px 14px; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.tk-pane .nbnew { border: 1.5px dashed var(--tk-soft-line); border-radius: 12.5px; background: var(--hover); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--tk-navy); font-size: 15px; font-weight: 500; }
+.tk-pane .search { display: flex; align-items: center; gap: 8px; width: 327.5px; background: var(--panel); border: 1px solid var(--border); border-radius: 9.5px; padding: 8px 12.5px; font-size: 14px; }
+.tk-pane .search input { flex: 1; }
+.tk-pane .chap { background: var(--panel); border: 1px solid var(--border); border-radius: 11px; }
+.tk-pane .chap.open { border-color: var(--tk-soft-line); }
+.tk-pane .chap .hd { display: flex; align-items: center; gap: 11px; padding: 8px 15.5px; width: 100%; text-align: left; }
+.tk-pane .chap .hd .chev { transition: transform .2s; flex: none; }
+.tk-pane .chap.open .hd .chev { transform: rotate(90deg); }
+.tk-pane .chap .hd .mid { flex: 1; }
+.tk-pane .chap .hd b { display: block; font-size: 15px; font-weight: 500; }
+.tk-pane .chap .hd small { font-size: 12.5px; color: var(--muted); }
+.tk-pane .chap .hd small.warn { color: var(--tk-amber); }
+.tk-pane .chap .pg { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 11.5px; font-weight: 500; color: var(--tk-navy); }
+.tk-pane .chap .pg i { display: block; width: 75px; height: 4.5px; border-radius: 2.5px; background: var(--tk-track); overflow: hidden; }
+.tk-pane .chap .pg i u { display: block; height: 100%; background: var(--tk-navy); }
+.tk-pane .chap .items { padding: 0 15.5px 6px; }
+.tk-pane .chap .itm { display: flex; align-items: center; gap: 11px; padding: 4.5px 0 4.5px 26.5px; border-top: 1px solid var(--border); }
+.tk-pane .chap .itm .mid { flex: 1; font-size: 14px; }
+.tk-pane .chap .itm small { display: block; font-size: 11.5px; color: var(--muted); }
+.tk-pane .tool { display: flex; align-items: center; gap: 11px; width: 100%; padding: 8px 9.5px; border-radius: 9.5px; text-align: left; }
+.tk-pane .tool:hover { background: var(--hover); }
+.tk-pane .tool .mid { flex: 1; }
+.tk-pane .tool b { display: block; font-size: 15px; font-weight: 500; }
+.tk-pane .tool small { font-size: 11.5px; color: var(--muted); }
+
+/* ===== Ghi đè sau phần sinh tự động (cùng độ ưu tiên nên phải đứng SAU) ===== */
+.tk-pane .row > .card, .tk-pane .row > .col{min-width:0}
+.tk-pane .w-main{flex:1.72 1 0}
+.tk-pane .w-side{flex:1 1 0}
+.tk-pane .w-hist{flex:0 0 31%}
+.tk-pane .chart{width:100%;height:auto;display:block}
+.tk-pane .tk-loading{display:flex;align-items:center;gap:10px;color:var(--muted);padding:24px 4px}
+.tk-pane .user i{overflow:hidden}
+.tk-pane .user i img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.tk-pane .bell{color:var(--ink)}
+.tk-pane .bell::after{display:none}
+.tk-pane .logo{padding-left:6px}
+.tk-pane .logo i{color:#fff}
+/* Chữ trên nền --tk-navy: trắng ở giao diện Sáng, tối ở giao diện Tối (nền navy đổi thành sáng) */
+.tk-pane .btn, .tk-pane .tag.navy, .tk-pane .rk.first .no, .tk-pane .banner, .tk-pane .cal .c.s button, .tk-pane .cal .c.e button, .tk-pane .ai .ah .ic{color:var(--tk-on-navy)}
+.tk-pane .btn:hover{color:var(--tk-on-navy)}
+.tk-pane .btn.sec{color:var(--ink)}
+.tk-pane .banner button{background:var(--panel);color:var(--tk-navy)}
+.tk-pane .ev.solid b{color:#fff !important}
+.tk-pane .kpis{flex-wrap:wrap}
+.tk-pane .kpi{min-width:170px}
+.tk-pane .grid3{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.tk-pane .search{max-width:100%}
+.tk-pane .itm-open{cursor:pointer}
+.tk-pane .itm-open:hover .mid b{color:var(--tk-navy);text-decoration:underline}
+.tk-pane .row.wrap{flex-wrap:wrap}
+.tk-pane .acts-list{display:flex;flex-direction:column;gap:8px}
+.tk-pane .acts-list label{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.tk-pane .acts-list label.off{color:var(--muted)}
+.tk-pane .modal-bg{position:absolute;inset:0;background:rgba(5,13,43,.35);display:grid;place-items:center;z-index:50}
+.tk-pane .modal{background:var(--panel);border-radius:14px;padding:20px 22px;width:min(480px,92%);display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(10,26,77,.25)}
+.tk-pane .modal h3{font-size:17px;font-weight:600}
+.tk-pane .modal .ft{display:flex;justify-content:flex-end;gap:10px}

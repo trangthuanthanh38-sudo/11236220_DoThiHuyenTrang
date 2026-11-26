@@ -1,0 +1,159 @@
+/* UC-33 — Hạn mức phía người học (mẫu han-muc-nguoi-hoc.html), tiền tố hm-. Thang chữ thu về thang của app
+   (mẫu vẽ trên khung 1440 nên chữ 18–19px ≈ 13–14px ở đây). Màu đọc token của ghichu.css (--panel/--ink/--muted…)
+   nên tự đúng giao diện Tối; màu cảnh báo khai riêng ở :root + bản Tối bên dưới. */
+:root {
+  --hm-amber: #9a5b12; --hm-amber-bg: #fff4de; --hm-amber-line: #f0d9a8;
+  --hm-red: #c2362f; --hm-red-bg: #fcf0ed; --hm-red-line: #f0c9c3;
+  --hm-green: #298052; --hm-green-bg: #ebf7f0;
+  --hm-navy: #0a1a4d; --hm-soft: #edf1f7; --hm-soft-line: #c7cfe0; --hm-track: #e6e9ef; --hm-bar: #6b789e;
+}
+:root[data-theme="dark"] {
+  --hm-amber: #f0c26b; --hm-amber-bg: #3a2e14; --hm-amber-line: #5c4a1f;
+  --hm-red: #ff8a80; --hm-red-bg: #3a1d1b; --hm-red-line: #5e2c28;
+  --hm-green: #7fd3a3; --hm-green-bg: #17301f;
+  --hm-navy: #c8d4ff; --hm-soft: #1f2840; --hm-soft-line: #34405e; --hm-track: #2a3347; --hm-bar: #8d9ac2;
+}
+
+/* ---------- Thanh Dung lượng cuối cột Notebook ---------- */
+.hm-meter { margin: 6px 10px 8px; padding: 10px 12px 9px; border-radius: 10px; background: var(--soft); border: 1px solid var(--border);
+  font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+.hm-meter .hm-mh { display: flex; justify-content: space-between; align-items: baseline; }
+.hm-meter .hm-mh b { color: var(--ink); font-weight: 600; }
+.hm-meter i { display: block; height: 5px; border-radius: 3px; background: var(--hm-track); overflow: hidden; }
+.hm-meter i b { display: block; height: 100%; border-radius: 3px; background: var(--hm-bar); transition: width .3s; }
+.hm-meter.l1 i b { background: #d99a1e; } .hm-meter.l2 i b, .hm-meter.l3 i b { background: var(--hm-red); }
+.hm-meter .hm-mrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hm-meter button { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--accent); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+
+/* ---------- Dải nhắc (trên cây Notebook) ---------- */
+.hm-banner { margin: 0 10px 8px; padding: 9px 10px; border-radius: 10px; border: 1px solid; font-size: 12px; line-height: 1.4;
+  display: grid; grid-template-columns: 1fr auto; gap: 6px 8px; align-items: start; }
+.hm-banner b { font-weight: 600; }
+.hm-banner small { display: block; opacity: .85; margin-top: 2px; font-size: 11.5px; }
+.hm-banner .hm-bact { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; }
+.hm-banner.l1 { background: var(--hm-soft); border-color: var(--hm-soft-line); color: var(--hm-navy); }
+.hm-banner.l2 { background: var(--hm-amber-bg); border-color: var(--hm-amber-line); color: var(--hm-amber); }
+.hm-banner.l3 { background: var(--hm-red-bg); border-color: var(--hm-red-line); color: var(--hm-red); }
+.hm-banner .hm-x { background: none; border: 0; color: inherit; cursor: pointer; width: 22px; height: 22px; border-radius: 50%; line-height: 1; font-size: 15px; }
+.hm-banner .hm-x:hover { background: rgba(0,0,0,.06); }
+.hm-sline { margin: 0 10px 8px; padding: 7px 10px; border-radius: 8px; font-size: 11.5px; background: var(--hm-amber-bg); color: var(--hm-amber); }
+.hm-sline.d { background: var(--hm-red-bg); color: var(--hm-red); }
+.hm-sline button { background: none; border: 0; padding: 0; font: inherit; color: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+/* ---------- Số lượt trên thẻ Studio ---------- */
+.hm-cnt { display: block; margin-top: 4px; font-size: 10.5px; font-weight: 500; color: var(--muted); line-height: 1.25; }
+.hm-cnt.w { color: var(--hm-amber); font-weight: 600; }
+.hm-cnt.z { color: var(--hm-red); font-weight: 600; }
+.studio-card.hm-zero { opacity: .82; }
+
+/* ---------- Nút / hộp thoại / toast dùng chung của module ---------- */
+.hm-btn { height: 36px; padding: 0 16px; border-radius: 18px; background: var(--panel); border: 1px solid var(--border-soft); color: var(--ink);
+  font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.hm-btn:hover:not(:disabled) { border-color: var(--muted-3); }
+.hm-btn.pri { background: var(--hm-navy); border-color: var(--hm-navy); color: #fff; }
+:root[data-theme="dark"] .hm-btn.pri { color: #0b1220; }
+.hm-btn.dan { background: var(--hm-red); border-color: var(--hm-red); color: #fff; }
+.hm-btn.sm { height: 30px; padding: 0 12px; font-size: 12px; }
+.hm-btn:disabled { opacity: .45; cursor: not-allowed; }
+.hm-link { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+.hm-ov { position: fixed; inset: 0; z-index: 1200; background: rgba(10,26,77,.32); display: grid; place-items: center; }
+.hm-modal { width: min(460px, calc(100vw - 32px)); background: var(--panel); color: var(--ink); border-radius: 18px; padding: 22px 24px 20px;
+  box-shadow: 0 24px 60px rgba(10,26,77,.22); display: flex; flex-direction: column; gap: 12px; font-size: 13.5px; animation: hmPop .16s ease; }
+@keyframes hmPop { from { transform: scale(.97); opacity: 0; } }
+.hm-modal h2 { font-size: 17px; font-weight: 600; margin: 0; }
+.hm-modal .hm-msub { color: var(--muted); margin: -4px 0 0; }
+.hm-modal .hm-mi { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--hm-red-bg); color: var(--hm-red); }
+.hm-modal .hm-box { background: var(--soft); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+.hm-modal .hm-box .rw { display: flex; justify-content: space-between; gap: 10px; }
+.hm-modal .hm-box .rw span { color: var(--muted); }
+.hm-modal .hm-box .rw b { font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.hm-modal ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.hm-modal .hm-warnbox { background: var(--hm-amber-bg); color: var(--hm-amber); border-radius: 12px; padding: 10px 14px; }
+.hm-modal .hm-mf { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.hm-modal textarea, .hm-modal input[type=text], .hm-modal select { width: 100%; box-sizing: border-box; border: 1px solid var(--border-soft); border-radius: 10px;
+  background: var(--panel); color: var(--ink); font: inherit; padding: 8px 12px; }
+.hm-modal textarea { resize: vertical; min-height: 90px; }
+.hm-modal .hm-err { color: var(--hm-red); font-size: 12.5px; }
+.hm-modal .hm-quote { background: var(--soft); border-left: 3px solid var(--hm-navy); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: var(--muted); }
+.hm-modal .hm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hm-modal .hm-chips span { background: var(--soft); border-radius: 10px; padding: 2px 10px; font-size: 12px; color: var(--muted); }
+.hm-modal .hm-seg { display: flex; gap: 6px; }
+.hm-modal .hm-seg button { flex: 1; height: 34px; border-radius: 10px; border: 1px solid var(--border-soft); background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.hm-modal .hm-seg button.on { border: 1.5px solid var(--hm-navy); background: var(--hm-soft); color: var(--hm-navy); font-weight: 600; }
+
+.hm-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 1300; background: var(--hm-navy); color: #fff;
+  border-radius: 22px; padding: 10px 18px; font-size: 13px; font-weight: 500; display: flex; gap: 14px; align-items: center;
+  box-shadow: 0 12px 30px rgba(10,26,77,.25); max-width: calc(100vw - 32px); }
+:root[data-theme="dark"] .hm-toast { color: #0b1220; }
+.hm-toast.warn { background: #6e420c; color: #fff; }
+.hm-toast button { background: none; border: 0; padding: 0; font: inherit; color: #9fb4ff; font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+/* ---------- Màn Dọn dung lượng ---------- */
+.hm-pane { height: 100%; overflow: auto; background: var(--bg); color: var(--ink); }
+.hm-wrap { max-width: 980px; margin: 0 auto; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 14px; }
+.hm-ph { display: flex; align-items: flex-end; gap: 12px; }
+.hm-ph-t { flex: 1; min-width: 0; }
+.hm-ph h1 { font-size: 22px; font-weight: 600; margin: 0; }
+.hm-ph p { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
+.hm-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.hm-usage { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.hm-ubar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--hm-track); }
+.hm-ubar b { display: block; height: 100%; transition: width .3s; }
+.hm-legend { display: flex; gap: 18px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+.hm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.hm-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.hm-legend b { color: var(--ink); font-weight: 600; }
+.hm-need { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 10px; font-size: 13px; }
+.hm-need.r { background: var(--hm-red-bg); color: var(--hm-red); } .hm-need.g { background: var(--hm-green-bg); color: var(--hm-green); }
+.hm-need.n { background: var(--hm-soft); color: var(--hm-navy); }
+.hm-need .sp { flex: 1; }
+.hm-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.hm-pill { height: 32px; padding: 0 14px; border-radius: 16px; background: var(--panel); border: 1px solid var(--border); color: var(--ink); font: inherit; font-size: 13px; white-space: nowrap; cursor: pointer; }
+.hm-pill:hover:not(.on) { border-color: var(--border-soft); }
+.hm-pill.on { background: var(--hm-soft); border: 1.5px solid var(--hm-navy); color: var(--hm-navy); font-weight: 600; }
+.hm-table-card { display: flex; flex-direction: column; }
+.hm-tr { display: grid; grid-template-columns: 34px minmax(0,1fr) 140px 170px 90px; align-items: center; gap: 8px; padding: 0 18px; min-height: 52px;
+  border-top: 1px solid var(--border); font-size: 13px; }
+.hm-tr.h { border-top: 0; background: var(--soft); min-height: 38px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.hm-tr.r { cursor: pointer; }
+.hm-tr.r:hover { background: var(--hover); }
+.hm-tr.r.sel { background: var(--active-tint); }
+.hm-tr > * { min-width: 0; }
+.hm-two b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm-two small { display: block; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm-sz { text-align: right; font-weight: 600; }
+.hm-cb { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--muted-3); display: grid; place-items: center; background: var(--panel); padding: 0; cursor: pointer; }
+.hm-tr.sel .hm-cb, .hm-cb.on, .hm-cb.mid { background: var(--hm-navy); border-color: var(--hm-navy); }
+.hm-tr.sel .hm-cb::after, .hm-cb.on::after { content: ""; width: 8px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px, -1px); }
+.hm-cb.mid::after { content: ""; width: 8px; border-top: 2px solid #fff; }
+.hm-chip { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.hm-chip.a { background: var(--hm-amber-bg); color: var(--hm-amber); } .hm-chip.r { background: var(--hm-red-bg); color: var(--hm-red); }
+.hm-chip.n { background: var(--hm-soft); color: var(--hm-navy); } .hm-chip.gr { background: var(--soft); color: var(--muted); }
+.hm-empty { padding: 40px 18px; text-align: center; color: var(--muted); font-size: 13px; }
+.hm-empty b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.hm-tfoot { display: flex; align-items: center; gap: 14px; justify-content: space-between; padding: 8px 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+.hm-pg { display: flex; gap: 3px; }
+.hm-pg button { min-width: 26px; height: 26px; border-radius: 7px; background: none; border: 0; color: var(--muted); font: inherit; cursor: pointer; }
+.hm-pg button.on { background: var(--hm-soft); color: var(--hm-navy); font-weight: 700; }
+.hm-pg button:disabled { opacity: .35; cursor: default; }
+.hm-selbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 18px; border-top: 1px solid var(--border); background: var(--soft); font-size: 13px; min-height: 54px; }
+.hm-selbar .sp { flex: 1; }
+.hm-selbar small { color: var(--muted); font-size: 12px; }
+
+/* ---------- Biểu tượng các loại thông báo mới trong chuông (ghichu_thongbao.js, class .lb-ni-ic.k-<kind>) ---------- */
+.lb-ni-ic.k-quota { background: var(--hm-amber-bg); color: var(--hm-amber); }
+.lb-ni-ic.k-quota_ai { background: var(--hm-soft); color: var(--hm-navy); }
+.lb-ni-ic.k-feedback { background: var(--hm-green-bg); color: var(--hm-green); }
+.lb-ni-ic.k-file_removed, .lb-ni-ic.k-account { background: var(--hm-red-bg); color: var(--hm-red); }
+
+/* ---------- Nút "Báo nội dung sai" trong các công cụ AI (UC-35, js/ghichu_gopy.js) ---------- */
+.gopy-link { background: none; border: 0; padding: 0; margin-top: 8px; font: inherit; font-size: 12px; color: var(--muted);
+  cursor: pointer; text-decoration: underline; text-underline-offset: 3px; align-self: flex-start; }
+.gopy-link:hover { color: var(--hm-red); }
+.ts-phead .gopy-link { margin: 0 12px 0 0; }
+
+/* UC-33: hộp xem thay đổi hạn mức (thông báo quota_change) */
+.hm-chg{margin:0;padding:10px 14px 10px 30px;background:var(--bg);border-radius:10px;font-size:13.5px;line-height:1.7;color:var(--ink)}
+.hm-chg-h{font-size:12.5px;font-weight:600;color:var(--muted);margin:2px 0 -6px}

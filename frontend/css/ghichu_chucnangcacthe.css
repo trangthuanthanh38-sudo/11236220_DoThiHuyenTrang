@@ -1,0 +1,159 @@
+/* ======================================================================
+   ghichu_chucnangcacthe.css — MODULE 3: điều khiển tab Home (đoạn văn/font/
+   cỡ chữ, nút định dạng), tìm trong nội dung (tab Review), modal "Vẽ phác
+   thảo" (tab Draw) và modal "Hướng dẫn/Phím tắt" (tab Help). Biến màu đọc
+   từ ghichu.css (dùng chung).
+   ====================================================================== */
+
+/* ---------- tab Home: đoạn văn / font / cỡ chữ ---------- */
+.home-extra{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding-right:8px;border-right:1px solid var(--border);margin-right:4px}
+/* Mũi tên dropdown dùng chung cho Style/Font (select thật) và cỡ chữ (nút .size-caret tự vẽ
+   cạnh ô input) — cùng một SVG chevron nên hai control trông giống hệt nhau. */
+.style-select,.font-select{height:30px;padding:0 26px 0 6px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23050d2b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center/13px 13px;border:1px solid var(--border-soft);border-radius:7px;font-size:12.5px;color:#050d2b;cursor:pointer;outline:none;font-family:inherit;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+.style-select{width:118px}
+.font-select{width:160px}
+/* Bản tối: nền + chữ + mũi tên chevron riêng (SVG stroke trắng) — không thể chỉ đổi biến CSS
+   vì màu chevron nằm trong data-URI của background-image ở trên. */
+:root[data-theme="dark"] .style-select,:root[data-theme="dark"] .font-select{background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1f4fb' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center/13px 13px;color:var(--ink-strong)}
+/* Cỡ chữ: input gõ tự do + mũi tên dropdown riêng bên phải (.size-caret), thay cho mũi tên
+   input[list]/datalist mặc định của trình duyệt — mỗi trình duyệt vẽ khác nhau, nên tự dựng
+   mũi tên (cùng SVG chevron với ô chọn Font ở trên) để trông giống hệt nhau. */
+.size-select{position:relative;display:inline-flex;align-items:center;width:74px}
+.size-input{width:100%;height:30px;padding:0 20px 0 8px;background:var(--panel);border:1px solid var(--border-soft);border-radius:7px;font-size:12.5px;color:var(--ink-strong);outline:none;font-family:inherit;-moz-appearance:textfield}
+.size-input::-webkit-outer-spin-button,.size-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.size-caret{position:absolute;right:0;top:0;bottom:0;width:22px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23050d2b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat center/13px 13px;border:0;border-radius:5px;cursor:pointer}
+:root[data-theme="dark"] .size-caret{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1f4fb' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat center/13px 13px}
+.size-caret:hover{background-color:var(--hover)}
+.size-caret:disabled{opacity:.4;cursor:not-allowed}
+.home-items{flex:0 0 auto;display:flex;align-items:center;gap:2px}
+.home-item-wrap{position:relative;display:flex;align-items:center}
+.home-item{width:32px;height:32px;display:grid;place-items:center;background:transparent;border:1px solid transparent;border-radius:7px;cursor:pointer;font-family:Lora,serif;font-size:15px;color:var(--muted);line-height:1}
+.home-item:hover{background:var(--hover)}
+.home-item.on{background:var(--active-tint);border-color:var(--active-line)}
+.home-item-caret{width:16px;height:32px;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--muted-3);font-size:9px}
+.home-item-caret:hover{background:var(--hover)}
+
+/* ---------- tìm trong nội dung (tab Review, ô cạnh breadcrumb) ---------- */
+.find-box{display:flex;align-items:center;gap:4px;height:30px;padding:0 4px 0 10px;background:var(--soft);border:1px solid var(--border-soft);border-radius:8px}
+.find-input{width:170px;height:26px;border:0;background:none;font-size:12.5px;color:var(--ink);outline:none;font-family:inherit}
+.icon-btn{width:30px;height:30px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--border-soft);border-radius:8px;cursor:pointer;color:var(--muted)}
+.icon-btn:hover{background:var(--hover-strong)}
+.icon-btn.active{background:var(--hover-strong)}
+.icon-btn-flat{width:22px;height:26px;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--muted)}
+.icon-btn-flat:hover{background:var(--hover-strong)}
+.find-box[hidden]{display:none}
+
+/* ---------- modal "Vẽ phác thảo" (tab Draw) ---------- */
+.sketch-modal{max-width:680px}
+.sketch-toolbar{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.sketch-tool{height:30px;padding:0 10px;display:flex;align-items:center;gap:6px;background:var(--panel);border:1.5px solid var(--border-soft);border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer}
+.sketch-tool:hover{background:var(--hover)}
+.sketch-tool.on{background:var(--active-tint);border-color:var(--active-line);color:var(--accent)}
+.sketch-swatch{width:20px;height:20px;border-radius:5px;border:1.5px solid rgba(9,22,60,.14);cursor:pointer;padding:0}
+.sketch-swatch.on{outline:2px solid var(--accent);outline-offset:1px}
+.sketch-sep{width:1px;height:20px;background:var(--border);margin:0 2px}
+.sketch-canvas-wrap{flex:1;min-height:0;background:var(--soft);display:flex;align-items:center;justify-content:center;padding:12px}
+#sketch-canvas{background:#fff;border:1px solid var(--border);border-radius:8px;max-width:100%;touch-action:none;cursor:crosshair}
+
+/* ---------- Insert ▸ Bảng: lưới chọn kích thước (kiểu Word/Google Docs) ---------- */
+.dd-table-picker{display:flex;flex-direction:column;align-items:center;gap:8px}
+.dd-table-label{font-size:12.5px;font-weight:600;color:var(--ink-strong);height:16px;line-height:16px}
+.dd-table-grid{display:grid;grid-template-columns:repeat(10,18px);grid-template-rows:repeat(8,18px);gap:2px}
+.dd-table-cell{width:18px;height:18px;padding:0;background:var(--soft);border:1px solid var(--border-soft);border-radius:2px;cursor:pointer}
+.dd-table-cell.hover{background:var(--active-tint);border-color:var(--accent)}
+.dd-table-custom{width:100%;height:30px;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border-soft);border-radius:7px;font-size:12.5px;color:var(--ink);cursor:pointer;font-family:inherit}
+.dd-table-custom:hover{background:var(--hover)}
+.dd-table-sep{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.dd-table-align-row{display:flex;align-items:center;gap:4px;padding:2px 0 2px 10px}
+.dd-table-align-row>span{flex:0 0 auto;min-width:72px;margin-right:6px;white-space:nowrap;font-size:12.5px;color:var(--muted-2)} /* đủ chỗ cho "Horizontal" */
+.dd-plain .dd-table-align-btn{width:32px;height:30px;padding:0;justify-content:center;color:var(--ink)}
+.dd-plain .dd-table-align-btn.on{background:var(--active-tint);color:var(--accent)}
+.dd-table-hint{width:0;min-width:100%;margin-top:8px;font-size:11.5px;line-height:1.45;color:var(--muted-2);white-space:normal}
+
+/* ---------- "+" cạnh hàng / cột đang bôi đen: chèn ngay sau vùng chọn ---------- */
+.table-sel-plus{position:fixed;width:22px;height:22px;padding:0;display:none;align-items:center;justify-content:center;background:var(--panel);border:1.5px solid var(--accent);border-radius:50%;color:var(--accent);font-size:15px;font-weight:600;line-height:1;cursor:pointer;z-index:51;box-shadow:0 2px 6px rgba(9,22,60,.22);font-family:inherit}
+.table-sel-plus:hover{background:var(--accent);color:#fff}
+.table-sel-plus.show{display:flex}
+
+/* ---------- modal "Chèn bảng tuỳ chỉnh" (Insert ▸ Bảng ▸ Chèn bảng tuỳ chỉnh…) ---------- */
+.table-custom-modal{max-width:300px}
+.table-custom-body{display:flex;gap:14px;padding:16px}
+.table-custom-body label{flex:1;display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-2)}
+.table-custom-body input{height:34px;padding:0 10px;background:var(--panel);border:1px solid var(--border-soft);border-radius:7px;font-size:14px;color:var(--ink-strong);font-family:inherit}
+
+/* ---------- "+" thêm nhanh hàng/cột cạnh bảng đang chứa con trỏ ---------- */
+.table-plus-btn{position:fixed;width:20px;height:20px;padding:0;display:none;align-items:center;justify-content:center;background:var(--accent);border:0;border-radius:50%;color:#fff;font-size:14px;line-height:1;cursor:pointer;z-index:50;box-shadow:0 2px 6px rgba(9,22,60,.28)}
+.table-plus-btn:hover{background:var(--accent-darker)}
+.table-plus-btn.show{display:flex}
+
+/* ---------- modal "Hướng dẫn nhanh / Phím tắt" (tab Help) ---------- */
+.info-modal{max-width:440px}
+.info-body{padding:16px;overflow:auto;font-size:13.5px;line-height:1.7;color:var(--ink)}
+.info-body ul{margin:0;padding-left:1.3em}
+.info-body li{margin-bottom:6px}
+.info-body kbd{background:var(--soft);border:1px solid var(--border-soft);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-family:inherit;font-size:12px}
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:0}
+
+/* ---- Ảnh trong trình soạn thảo (Insert ▸ Hình ảnh, khối "Ảnh" ở ghichu_chucnangcacthe.js) ---- */
+/* Đổi riêng chiều cao: CKEditor ghi style height lên <figure>; ảnh lấp phần còn lại (trừ dòng chú thích). */
+.ck-content figure.image.image_resized[style*="height"]{display:flex;flex-direction:column}
+.ck-content figure.image.image_resized[style*="height"] > img{flex:1 1 0;min-height:0;width:100%;height:auto;object-fit:fill}
+.ck-content figure.image.image_resized[style*="height"] > figcaption{flex:0 0 auto}
+.ck-content .image-inline.image_resized img{object-fit:fill}
+.ck-editor__editable .ck-widget.image.ck-widget_selected > img{cursor:move}
+.img-bar{position:fixed;z-index:52;display:none;align-items:center;gap:4px;padding:5px 6px;background:var(--panel);border:1px solid var(--border-soft);border-radius:10px;box-shadow:0 6px 18px rgba(9,22,60,.16);font-size:12.5px;color:var(--ink);white-space:nowrap}
+.img-bar.show{display:flex}
+.img-ctl-group{display:flex;align-items:center;gap:3px}
+.img-ctl-wrap{flex-wrap:wrap;row-gap:6px}
+.img-ctl-sep{width:1px;height:20px;background:var(--border);margin:0 3px}
+.img-ctl-btn{height:28px;min-width:28px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--ink);cursor:pointer;font-family:inherit;font-size:12.5px}
+.img-ctl-btn:hover:not(:disabled){background:var(--hover)}
+.img-ctl-btn.on{background:var(--accent-tint);border-color:var(--active-line);color:var(--accent)}
+.img-ctl-btn:disabled{opacity:.4;cursor:default}
+.img-ctl-txt{padding:0 8px;font-weight:600}
+.img-ctl-num{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:12.5px;font-weight:400;margin:0}
+.img-ctl-num span,.img-ctl-x,.img-ctl-unit{font-size:12.5px}
+.img-ctl-num input{width:58px;height:26px;padding:0 5px;background:var(--panel);border:1px solid var(--border-soft);border-radius:6px;font-size:12.5px;color:var(--ink-strong);font-family:inherit;outline:none}
+.img-ctl-num input:focus{border-color:var(--accent)}
+.img-ctl-x,.img-ctl-unit{color:var(--muted-2)}
+.img-dd{min-width:240px}
+.img-dd .img-ctl-group{padding:2px 8px}
+.img-edge{position:fixed;z-index:51;display:none;background:var(--accent);border:2px solid #fff;border-radius:6px;box-shadow:0 1px 4px rgba(9,22,60,.3);touch-action:none}
+.img-edge.show{display:block}
+.img-edge-r{width:10px;height:28px;cursor:ew-resize}
+.img-edge-b{width:28px;height:10px;cursor:ns-resize}
+.img-ghost{position:fixed;z-index:50;display:none;border:2px dashed var(--accent);background:rgba(13,110,253,.06);pointer-events:none;box-sizing:border-box}
+.img-ghost.show{display:block}
+.img-ghost::after{content:attr(data-size);position:absolute;right:4px;bottom:4px;padding:2px 6px;background:var(--accent);color:#fff;border-radius:5px;font-size:11.5px;font-weight:600}
+body.img-resizing-w,body.img-resizing-w *{cursor:ew-resize!important;user-select:none}
+body.img-resizing-h,body.img-resizing-h *{cursor:ns-resize!important;user-select:none}
+.img-move{position:fixed;z-index:52;display:none;width:28px;height:28px;padding:0;align-items:center;justify-content:center;background:var(--panel);border:1.5px solid var(--accent);border-radius:7px;color:var(--accent);cursor:grab;box-shadow:0 2px 6px rgba(9,22,60,.25);touch-action:none}
+.img-move.show{display:flex}
+.img-move:hover{background:var(--accent);color:#fff}
+.img-ghost.move{background:rgba(13,110,253,.12)}
+.img-drop-line{position:fixed;z-index:50;display:none;height:3px;background:var(--accent);border-radius:2px;pointer-events:none}
+.img-drop-line.show{display:block}
+body.img-moving,body.img-moving *{cursor:grabbing!important;user-select:none}
+
+/* ---- Liên kết (Insert ▸ Liên kết, Ctrl+K) ---- */
+.link-modal{max-width:440px}
+.link-body{display:flex;flex-direction:column;gap:12px;padding:16px}
+.link-field{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-2)}
+.link-field input{height:36px;padding:0 10px;background:var(--panel);border:1px solid var(--border-soft);border-radius:8px;font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-strong);font-family:inherit;outline:none}
+.link-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.link-field input:disabled{background:var(--soft);color:var(--muted)}
+.link-field input.bad{border-color:var(--danger)}
+.link-err{margin-top:-6px;font-size:12.5px;color:var(--danger)}
+.link-note{margin-top:-6px;font-size:12px;color:var(--muted)}
+.link-hint{font-size:12px;line-height:1.5;color:var(--muted-2)}
+.link-remove{color:var(--danger)}
+.link-remove[hidden]{display:none}
+.link-pop{position:fixed;z-index:53;display:none;align-items:center;gap:3px;max-width:min(460px,calc(100vw - 16px));padding:4px 6px;background:var(--panel);border:1px solid var(--border-soft);border-radius:10px;box-shadow:0 6px 18px rgba(9,22,60,.16);font-size:12.5px}
+.link-pop.show{display:flex}
+.link-pop-url{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:260px;padding:4px 6px;border-radius:6px;color:var(--accent);text-decoration:none}
+.link-pop-url span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.link-pop-url:hover{background:var(--hover);text-decoration:underline}
+.link-pop-url svg{flex:0 0 auto}
+.link-pop .link-pop-del{color:var(--danger)}
+.ck-content a{color:var(--accent);text-decoration:underline}

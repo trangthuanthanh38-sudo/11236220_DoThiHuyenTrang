@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notebook · Quản trị</title>
+<!-- Admin Console — UC-32 → UC-37 (.claude/rules/10-admin.md). Giao diện theo mockup admin.html ở gốc repo,
+     dữ liệu thật qua /admin/* (backend/app/routers/admin.py). Chỉ role='admin' vào được (admin.js). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div id="wrap"><div id="stage">
+
+  <aside class="side">
+    <div class="logo"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a1a4d" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18"/></svg></i>Notebook</div>
+    <div class="role">Quản trị</div>
+    <nav class="nav" id="nav">
+      <button data-p="users"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>Người dùng</button>
+      <button data-p="quota"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20v-6M9 20V8M14 20v-9M19 20V4"/></svg>Hạn mức</button>
+      <button data-p="files"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></svg>File &amp; Storage</button>
+      <button data-p="logs"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>Nhật ký</button>
+      <button data-p="fb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/></svg>Góp ý<span class="cnt" id="fbCnt" hidden>0</span></button>
+      <button data-p="rep"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M4 16l5-6 4 3 7-8"/></svg>Báo cáo</button>
+    </nav>
+    <button class="logout" id="logoutBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>Đăng xuất</button>
+  </aside>
+
+  <!-- Responsive: cửa sổ < 1124px thì thanh trái thành ngăn kéo (admin_core.js fit() gắn #stage.compact) -->
+  <div class="side-scrim" id="sideScrim"></div>
+  <header class="top">
+    <button class="hamb" id="sideBtn" aria-label="Mở menu quản trị" aria-expanded="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg></button>
+    <div class="crumb"><span>Quản trị</span><i>/</i><b id="crumb">Người dùng</b></div>
+    <button class="bell" id="bellBtn" aria-label="Thông báo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg><span class="dot" id="bellDot"></span></button>
+    <div class="me"><div class="av" id="meAv">AD</div><span id="meName">Quản trị viên</span></div>
+  </header>
+  <div class="pop notif" id="notif" hidden></div>
+
+  <!-- ========== 1 · Người dùng ========== -->
+  <section class="page" id="p-users">
+    <div class="ph"><div class="tt"><h1>Người dùng</h1><p>Quản lý tài khoản người học · chỉ xem số liệu tổng hợp (BR-16)</p></div>
+      <button class="btn" id="uExport">Xuất danh sách</button></div>
+    <div class="kpis" id="uKpi"></div>
+    <div class="tools">
+      <label class="srch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#696868" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="uQ" placeholder="Tìm theo tên, SĐT, Gmail…" autocomplete="off"><button class="x" id="uQx" hidden>×</button></label>
+      <div id="uF" style="display:flex;gap:12px"></div>
+    </div>
+    <div class="tbl" id="uT"></div>
+  </section>
+
+  <!-- ========== 4 · Hạn mức ========== -->
+  <section class="page" id="p-quota">
+    <div class="ph"><div class="tt"><h1>Hạn mức sử dụng</h1><p>Áp dụng chung cho mọi người học · mỗi lần sửa cần lý do, gửi thông báo tới người học · có thể đặt tạm thời rồi tự về mức cố định</p></div>
+      <button class="btn" id="qUndo" disabled>Hoàn tác</button><button class="btn pri" id="qSave" disabled>Lưu thay đổi</button><button class="btn" id="aExport" hidden>Xuất danh sách</button></div>
+    <div class="utabs" id="qTabs"><button data-t="cfg">Cấu hình chung</button><button data-t="acc">Theo tài khoản · <span id="qNear"></span> gần chạm</button></div>
+    <div id="qCfg">
+      <div class="qwrap" style="margin-top:18px">
+        <div>
+          <div class="card"><div class="ch"><div><h3>Lượt AI</h3><p>Mỗi tính năng đếm riêng · Hỏi đáp tính theo từng cuộc hội thoại (hết lượt thì mở cuộc mới), công cụ khác đặt lại lúc 00:00</p></div></div>
+            <div id="qT"></div>
+            <div class="airow"><b>Nhắc khi lượt AI còn</b><label class="num" data-tnum="2"><input type="number" data-ti="2" aria-label="Ngưỡng nhắc lượt AI"><span>%</span></label><span>trong ngày · chỉ hiện trong app, tối đa 1 lần mỗi ngày</span></div>
+            <div class="qfoot" id="qFoot"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <div class="card"><div class="ch"><div><h3>Dung lượng &amp; tệp</h3><p>Kiểm tra khi người học tải lên</p></div></div><div id="sT"></div></div>
+          <div class="card"><div class="ch"><div><h3>Cảnh báo sớm</h3><p>Áp dụng cho dung lượng và số tệp mỗi môn</p></div></div>
+            <div class="srow"><div class="rw"><span>Nhắc lần 1</span><label class="num" data-tnum="0"><input type="number" data-ti="0" aria-label="Ngưỡng nhắc lần 1"><span>%</span></label></div><small>Tự gửi vào chuông · gợi ý dọn tệp lớn</small></div>
+            <div class="srow"><div class="rw"><span>Nhắc lần 2</span><label class="num" data-tnum="1"><input type="number" data-ti="1" aria-label="Ngưỡng nhắc lần 2"><span>%</span></label></div><small>Nhắc gấp · tới 100% thì chặn tải lên</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="qAcc" hidden>
+      <div class="tools">
+        <label class="srch" style="width:340px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#696868" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="aQ" placeholder="Tìm theo tên, SĐT, Gmail…" autocomplete="off"><button class="x" id="aQx" hidden>×</button></label>
+        <div id="aF" style="display:flex;gap:12px"></div>
+      </div>
+      <div class="tbl" id="aT"></div>
+    </div>
+  </section>
+
+  <!-- ========== 5 · File & Storage ========== -->
+  <section class="page" id="p-files">
+    <div class="ph"><div class="tt"><h1>File &amp; Storage</h1><p>Gộp từ tài liệu PDF, tệp đính kèm chat và ảnh đính kèm góp ý</p></div>
+      <button class="btn" id="fExport">Xuất danh sách</button></div>
+    <div class="kpis" id="fKpi"></div>
+    <div class="tools">
+      <label class="srch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#696868" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="fQ" placeholder="Tìm theo tên tệp, chủ sở hữu…" autocomplete="off"><button class="x" id="fQx" hidden>×</button></label>
+      <div id="fF" style="display:flex;gap:12px"></div>
+    </div>
+    <div class="tbl" id="fT"></div>
+  </section>
+
+  <!-- ========== 6 · Nhật ký ========== -->
+  <section class="page" id="p-logs">
+    <div class="ph"><div class="tt"><h1>Nhật ký quản trị <span class="ro">Chỉ đọc</span></h1><p>Ghi lại mọi thao tác của quản trị viên · không thể sửa hoặc xoá (BR-18)</p></div>
+      <button class="btn" id="lExport">Xuất CSV</button></div>
+    <div class="tools" style="margin-top:46px">
+      <label class="srch" style="width:340px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#696868" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="lQ" placeholder="Tìm đối tượng, quản trị viên…" autocomplete="off"><button class="x" id="lQx" hidden>×</button></label>
+      <div id="lF" style="display:flex;gap:12px"></div>
+      <div class="range"><button id="lRangeBtn"></button><div class="menu" id="lRange" hidden></div></div>
+    </div>
+    <div class="tbl" id="lT" style="margin-top:24px"></div>
+  </section>
+
+  <!-- ========== 7 · Góp ý ========== -->
+  <section class="page" id="p-fb">
+    <div class="ph" style="margin-top:18px"><div class="tt"><h1>Góp ý từ người học</h1><p id="fbSub"></p></div></div>
+    <div class="fbw">
+      <div class="fbl"><div class="tabs" id="fbTabs"></div><div class="lst" id="fbList"></div><div class="tf" id="fbPg"></div></div>
+      <div class="fbd" id="fbD"></div>
+    </div>
+  </section>
+
+  <!-- ========== 8 · Báo cáo ========== -->
+  <section class="page" id="p-rep">
+    <div class="ph"><div class="tt"><h1>Báo cáo hệ thống</h1><p id="rSub"></p></div>
+      <div class="rtools">
+        <button class="pill" data-r="7">7 ngày</button><button class="pill" data-r="30">30 ngày</button><button class="pill" data-r="c" id="rCustomBtn">Tùy chọn</button>
+      </div></div>
+    <div class="pop crange" id="rCustom" hidden>
+      <b style="font-weight:500">Chọn khoảng thời gian</b>
+      <div class="grid2"><div><span class="fl" style="margin:0">Từ ngày</span><input type="date" class="inp" id="rFrom"></div><div><span class="fl" style="margin:0">Đến ngày</span><input type="date" class="inp" id="rTo"></div></div>
+      <div class="hint" id="rErr" style="margin:0">Tối đa 90 ngày.</div>
+      <div class="mf" style="margin:0"><button class="btn sm" id="rCancel">Huỷ</button><button class="btn sm pri" id="rApply">Áp dụng</button></div>
+    </div>
+    <div class="kpis" id="rKpi" style="margin-top:18px"></div>
+    <div class="rgrid">
+      <div class="rc" style="height:351px"><h3>Lượt gọi AI theo ngày</h3><p id="rAvg"></p><div class="bars" id="rBars"></div></div>
+      <div class="rc" style="height:400px"><h3>Theo tính năng</h3><p>Tỷ lệ trên tổng lượt gọi</p><div class="feat" id="rFeat"></div></div>
+      <div class="rc" style="height:188px"><h3>Chạm hạn mức</h3><p id="rHitSub"></p><div class="hits" id="rHits"></div></div>
+      <div class="rc" style="height:183px"><h3>Người dùng hoạt động</h3><p id="rActSub"></p><div id="rLine" style="position:relative;height:86px;margin-top:8px"></div></div>
+    </div>
+  </section>
+
+  <div id="layer"></div>
+  <div class="toast" id="toast" hidden><span id="toastT"></span><button id="toastU" hidden>Hoàn tác</button></div>
+</div></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-client.js"></script>
+<script type="module" src="../js/admin.js"></script>
+</body>
+</html>

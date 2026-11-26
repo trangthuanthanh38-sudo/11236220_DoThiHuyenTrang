@@ -1,0 +1,194 @@
+/* Dựng lại đúng theo thiết kế gốc lấy từ login.html/signup.html/forgotpw.html
+   (bản mockup "Bundled Page" — nội dung x-dc bên trong không hề bị nén, chỉ có
+   phần engine render là nén). Các thuộc tính riêng của design-canvas runtime
+   (sc-camel-on-*, style-hover, style-focus, {{ }}) được thay bằng CSS/JS chuẩn. */
+
+/* Font 'Figtree' được nạp qua <link> Google Fonts trong <head> mỗi trang
+   (xem dangky.html/dangnhap.html/quenmatkhau.html) — không khai báo @font-face
+   ở đây để tránh trùng/ghi đè nguồn font. */
+
+:root{
+  --navy:#050d2b;
+  --navy-hover:#0a1a4d;
+  --accent-dot:#2b7cff;
+  --hero-sub:#c9d2e8;
+  --label:#4a5468;
+  --ink:#0b1220;
+  --border:#dfe4ec;
+  --border-accent:#6ea8fe;
+  --placeholder:#9aa3b2;
+  --muted-icon:#8b93a5;
+  --link:#0d6efd;
+  --link-hover:#0a58ca;
+  --google-bg:#eaf2ff;
+  --google-bg-hover:#dde9ff;
+  --progress-off:#e6eaf2;
+  --error:#c0392b;
+  --error-bg:#fdecea;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; height:100%; overflow:hidden; } /* khoá cứng 100vh -> không bao giờ sinh scrollbar trang */
+body{
+  font-family:'Figtree', system-ui, -apple-system, sans-serif;
+  background:#fff;
+}
+input::placeholder{ color:var(--placeholder); }
+a{ color:var(--link); text-decoration:none; }
+a:hover{ color:var(--link-hover); text-decoration:underline; }
+
+.dc-shell{
+  height:100vh;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:#fff;
+}
+.dc-side{
+  position:relative;
+  background:var(--navy);
+  padding:clamp(24px,4vh,52px) clamp(28px,4vw,56px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  height:100%;
+  min-height:0;
+}
+.dc-side::before{
+  content:"";
+  position:absolute;
+  inset:88px 0 88px 88px;
+  background:radial-gradient(120% 90% at 78% 62%, #17358f 0%, #0c1c58 42%, var(--navy) 78%);
+}
+.dc-logo{
+  position:relative;
+  font-weight:700;
+  font-style:italic;
+  letter-spacing:.14em;
+  font-size:22px;
+  color:#fff;
+}
+.dc-logo span{ color:var(--accent-dot); }
+
+.dc-hero{
+  position:relative;
+  margin-top:auto;
+  margin-bottom:auto;
+  padding-top:40px;
+  transform:translateY(-25px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  animation:dcSlideIn 1.2s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes dcSlideIn{ from{ transform:translate(-40px,-25px); opacity:0; } to{ transform:translateY(-25px); opacity:1; } }
+.dc-hero h1{
+  margin:0; align-self:stretch; text-align:left; white-space:nowrap;
+  font-style:italic; font-weight:500;
+  font-size:clamp(28px,3.9vw,58px); line-height:1.05; color:#fff; letter-spacing:-.015em;
+}
+.dc-hero p{
+  margin:26px 0 0; font-style:italic; font-weight:400;
+  font-size:clamp(18px,2.1vw,32px); line-height:1.4; color:var(--hero-sub);
+  max-width:14em; align-self:stretch; text-align:left;
+}
+
+.dc-panel{
+  height:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(16px,4vh,56px) 40px;
+  background:linear-gradient(135deg,#f7f9fc 0%,#ffffff 60%);
+  overflow-y:auto; /* van an toàn: nếu nội dung 1 bước vẫn dài hơn màn hình rất thấp, cuộn RIÊNG trong khung này, trang ngoài không bao giờ lộ scrollbar */
+}
+.dc-form{
+  width:100%; max-width:376px; background:#fff;
+  padding:clamp(20px,3.5vh,38px) 34px clamp(16px,3vh,30px);
+  box-shadow:0 24px 60px rgba(9,22,60,.10), 0 2px 8px rgba(9,22,60,.06);
+  margin:auto 0; /* căn giữa theo chiều dọc khi panel cao hơn nội dung */
+}
+.dc-form label{ display:block; font-size:13px; color:var(--label); margin-bottom:6px; }
+.dc-field + .dc-field{ margin-top:clamp(10px,2vh,20px); }
+.dc-input{
+  width:100%; height:46px; padding:0 14px;
+  font-family:inherit; font-size:14px; color:var(--ink);
+  background:#fff; border:1.5px solid var(--border); border-radius:8px; outline:none;
+}
+.dc-input:focus{ border-color:var(--border-accent); }
+.dc-input--accent{ border-color:var(--border-accent); }
+.dc-input[type="tel"] { }
+
+.dc-pass-wrap{ position:relative; }
+.dc-pass-wrap .dc-input{ padding-right:44px; }
+.dc-eye-btn{
+  position:absolute; top:0; right:0; height:46px; width:42px;
+  display:flex; align-items:center; justify-content:center;
+  background:none; border:0; cursor:pointer; color:var(--muted-icon); padding:0;
+}
+.dc-eye-ring{
+  width:15px; height:15px; border:1.5px solid currentColor;
+  border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  display:grid; place-items:center;
+}
+.dc-eye-dot{ width:5px; height:5px; border-radius:50%; background:currentColor; }
+.dc-eye-btn.is-shown .dc-eye-dot{ background:var(--link); }
+
+.dc-forgot-row{ margin:14px 0 0; text-align:right; font-size:13px; }
+.dc-forgot-row a{ color:var(--label); font-weight:500; }
+
+.dc-btn{
+  margin-top:clamp(10px,2vh,18px); width:100%; height:46px;
+  border:0; border-radius:8px; font-family:inherit; font-size:14px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:filter .2s ease;
+}
+.dc-btn:active{ filter:brightness(.92); }
+.dc-btn:disabled{ opacity:.55; cursor:not-allowed; }
+.dc-btn-primary{ background:var(--navy); color:#fff; }
+.dc-btn-primary:hover:not(:disabled){ background:var(--navy-hover); }
+.dc-btn-google{ margin-top:clamp(8px,1.5vh,12px); background:var(--google-bg); color:var(--link); }
+.dc-btn-google:hover:not(:disabled){ background:var(--google-bg-hover); }
+
+.dc-google-dot{
+  width:18px; height:18px; border-radius:50%;
+  background:conic-gradient(#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);
+  display:grid; place-items:center; flex:none;
+}
+.dc-google-dot span{ width:7px; height:7px; border-radius:50%; background:var(--google-bg); }
+
+.dc-footer{ margin:clamp(12px,2vh,22px) 0 0; text-align:center; font-size:13px; color:var(--muted-icon); }
+.dc-footer a{ font-weight:600; }
+
+.dc-msg{ margin:14px 0 0; font-size:13px; line-height:1.5; }
+.dc-msg--error{ color:var(--error); }
+.dc-msg--hint{ color:var(--muted-icon); }
+.dc-msg--success{ color:var(--link); }
+[hidden]{ display:none !important; }
+
+/* Wizard OTP/reset (dùng ở dangky bước 2 và quenmatkhau) */
+.dc-progress{ display:flex; gap:6px; margin-bottom:clamp(12px,2.5vh,24px); }
+.dc-progress span{ height:4px; flex:1; border-radius:99px; background:var(--progress-off); }
+.dc-progress span.is-active{ background:var(--link); }
+
+.dc-step-eyebrow{ margin:0 0 4px; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-icon); }
+.dc-step-title{ margin:0 0 6px; font-size:20px; font-weight:600; color:var(--ink); }
+.dc-step-hint{ margin:0 0 clamp(12px,2.5vh,24px); font-size:13px; line-height:1.5; color:var(--muted-icon); }
+
+.dc-code-row{ display:flex; gap:10px; }
+.dc-code-box{
+  flex:1; min-width:0; height:52px; text-align:center;
+  font-family:inherit; font-size:18px; font-weight:600; color:var(--ink);
+  background:#fff; border:1.5px solid var(--border); border-radius:8px; outline:none;
+}
+.dc-code-box:focus{ border-color:var(--border-accent); }
+
+.dc-done{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:6px 0 2px; }
+.dc-done-icon{
+  width:56px; height:56px; border-radius:50%; background:var(--google-bg);
+  display:grid; place-items:center; margin-bottom:16px;
+}
+.dc-done p{ margin:0; font-size:14px; line-height:1.6; color:var(--label); }
+
+@media (max-width:760px){
+  .dc-shell{ grid-template-columns:1fr; }
+  .dc-side{ display:none; }
+  .dc-panel{ padding:40px 20px; }
+}

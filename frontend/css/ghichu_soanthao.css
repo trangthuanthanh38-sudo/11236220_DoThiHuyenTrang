@@ -1,0 +1,150 @@
+/* ======================================================================
+   ghichu_soanthao.css — MODULE 1: cây Notebooks (Môn học → Chương/File PDF),
+   PDF viewer + chú thích, và diện mạo nội dung CKEditor (bài ghi chú) +
+   in ấn (UC-17). Biến màu (--ink, --panel, --border...) đọc từ ghichu.css
+   (dùng chung, khai báo :root/[data-theme] ở đó).
+   ====================================================================== */
+
+/* ---------- sidebar: cây Notebooks ---------- */
+.sidebar{min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.sidebar-head{flex:0 0 auto;padding:16px 16px 12px}
+.sidebar-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sidebar-title-actions{display:flex;align-items:center;gap:6px}
+.search-box{display:flex;align-items:center;gap:8px;height:36px;padding:0 11px;background:var(--soft);border-radius:9px;overflow:hidden}
+.search-field{flex:1;min-width:0;position:relative;height:20px;overflow:hidden}
+.search-input{position:absolute;inset:0;width:100%;border:0;background:none;font-size:13px;color:var(--ink);outline:none;z-index:2;font-family:inherit}
+.search-marquee{position:absolute;inset:0;display:flex;align-items:center;white-space:nowrap;pointer-events:none;font-size:13px;color:var(--ink-strong)}
+.search-marquee span{animation:td-marquee 11s linear infinite;padding-right:30px}
+.tree-scroll{flex:1;min-height:0;overflow:auto;padding:0 10px 14px}
+.tree-item{margin-bottom:4px;border-top:2px solid transparent}
+.tree-item.drop-target{border-top-color:var(--accent)}
+.tree-row{display:flex;align-items:center;gap:2px;border-radius:8px}
+.tree-row.active-subject{background:transparent}
+.tree-row-btn{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:8px;background:none;border:0;border-radius:8px;cursor:pointer;text-align:left;font-family:inherit}
+.tree-caret{width:14px;display:grid;place-items:center;color:var(--ink-strong);font-size:10px;transition:transform .12s}
+.tree-caret.open{transform:rotate(90deg)}
+.tree-dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+.tree-name{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-count{font-size:11px;color:var(--ink-strong)}
+.menu-btn{flex:0 0 auto;width:24px;height:26px;margin-right:4px;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--ink-strong);font-size:14px;line-height:1}
+.menu-btn:hover{background:var(--hover-strong)}
+.chapter-list{margin:2px 0 6px 21px;padding-left:11px;border-left:1.5px solid var(--border);display:flex;flex-direction:column;gap:2px}
+.chapter-item{border-top:2px solid transparent}
+.chapter-item.drop-target{border-top-color:var(--accent)}
+.chapter-row{display:flex;align-items:center;gap:2px;border-radius:8px}
+.chapter-row.active{background:var(--accent-tint)}
+.chapter-row-btn{flex:1;min-width:0;display:flex;align-items:center;gap:9px;padding:7px 9px;background:none;border:0;border-radius:8px;cursor:pointer;text-align:left;font-family:inherit}
+.chapter-menu-btn{flex:0 0 auto;width:24px;height:24px;margin-right:4px;display:grid;place-items:center;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--ink-strong);font-size:14px;line-height:1}
+.chapter-menu-btn:hover{background:var(--hover-strong)}
+.chapter-name{flex:1;min-width:0;font-size:13px;font-weight:500;color:var(--ink-strong);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chapter-name.active{font-weight:600;color:var(--accent)}
+.tree-input{width:100%;height:34px;padding:0 10px;border:1.5px solid var(--active-line);border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);outline:none;font-family:inherit}
+.tree-input.chapter-input{height:32px;font-weight:500}
+.new-chapter-btn{display:flex;align-items:center;gap:9px;padding:7px 9px;background:none;border:0;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink-strong);width:100%;text-align:left;font-family:inherit}
+.new-chapter-btn:hover{background:var(--soft)}
+.new-item-actions{display:flex;gap:2px}
+.new-item-actions .new-chapter-btn{width:auto;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-empty{margin:10px 8px;font-size:12.5px;line-height:1.6;color:var(--ink-strong)}
+.sidebar-foot{flex:0 0 auto;padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-foot-title{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebar-foot-sub{font-size:11px;color:var(--ink-strong)}
+
+/* ---------- Xem/chú thích PDF (File PDF — item ngang hàng Chương) ---------- */
+/* Thanh công cụ (Trang X/Y, zoom) nằm trong .editor-head (ghichu.css), cạnh tên File PDF. */
+.pdf-inline-toolbar{display:flex;align-items:center;gap:6px}
+.doc-zoom-indicator{height:30px;min-width:52px;padding:0 6px;background:transparent;border:0;border-radius:7px;font-size:12.5px;color:var(--muted);cursor:pointer;font-family:inherit}
+.doc-zoom-indicator:hover{background:var(--hover);color:var(--ink)}
+#doc-zoom-toolbar .sketch-tool:disabled{opacity:.4;cursor:default}
+#pdf-page-indicator,#pdf-zoom-indicator{font-size:12.5px;color:var(--muted);min-width:64px;text-align:center}
+
+#pdf-host[hidden]{display:none}
+/* Cuộn dọc liên tục: các trang chỉ là các khối xếp chồng bình thường trong dòng chảy của
+   .editor-scroll (đã tự overflow:auto) — KHÔNG tạo thêm 1 lớp cuộn lồng nhau. */
+.pdf-pages-scroll{display:flex;flex-direction:column;align-items:center;gap:18px;padding-bottom:40px}
+.pdf-page-block{position:relative;box-shadow:0 4px 20px rgba(9,22,60,.14);border-radius:2px;height:fit-content}
+.pdf-page-canvas{display:block;border-radius:2px}
+.pdf-overlay-canvas,.pdf-textbox-layer,.pdf-interact-layer{position:absolute;left:0;top:0;width:100%;height:100%}
+.pdf-textbox-layer{pointer-events:none}
+.pdf-interact-layer{cursor:default}
+/* Không có tool nào đang chọn (chế độ xem/di chuyển textbox) -> interact-layer nhường chỗ
+   (pointer-events:none) để click/kéo rơi thẳng xuống .pdf-textbox bên dưới nó. Có tool (vẽ/
+   xoá/textbox mới) -> interact-layer lấy lại quyền bắt sự kiện, đổi con trỏ theo tool — xem
+   pdfInteractCursor() trong ghichu_soanthao.js. */
+#pdf-host:not(.has-tool) .pdf-interact-layer{pointer-events:none}
+#pdf-host.tool-textbox .pdf-interact-layer{cursor:text}
+#pdf-host.tool-erase .pdf-interact-layer{cursor:not-allowed}
+#pdf-host.tool-draw .pdf-interact-layer,#pdf-host.tool-highlight .pdf-interact-layer{cursor:crosshair}
+.pdf-textbox{position:absolute;white-space:pre-wrap;line-height:1.3;font-family:Figtree,sans-serif;pointer-events:auto;overflow:hidden;cursor:grab;border:1.5px solid transparent;border-radius:3px}
+.pdf-textbox:hover{border-color:var(--border-soft)}
+.pdf-textbox.dragging{cursor:grabbing;border-color:var(--active-line);background:rgba(255,255,255,.5)}
+.pdf-textbox-editing{position:absolute;pointer-events:auto;resize:both;overflow:auto;border:1.5px dashed var(--active-line);background:var(--panel);border-radius:4px;padding:4px 6px;font-family:inherit;outline:none;min-height:28px}
+
+/* ---------- CKEditor look (nội dung Bài ghi chú) ---------- */
+[data-ck-hidden]{display:none !important}
+.ck.ck-toolbar{display:none !important}
+.ck.ck-editor__editable{border:0 !important;box-shadow:none !important;padding:0 !important;min-height:60vh}
+.ck.ck-content{color:var(--ink-strong);line-height:1.75}
+.ck.ck-content blockquote{border-left:3px solid var(--border-soft);margin-left:0;padding-left:14px;color:var(--muted);font-style:italic}
+.ck.ck-content ul,.ck.ck-content ol{padding-left:1.6em}
+.ck.ck-content li>p{margin:0}
+/* Bullet 3 cấp (UC-16 — xem setupBulletTabLeveling() trong ghichu_soanthao.js): ký hiệu mỗi
+   cấp do CKEditor gán qua thuộc tính model rồi downcast thành list-style-type thật trên
+   <li>/<ul> tương ứng — không có gì hard-code theo vị trí DOM ở đây. */
+.ck.ck-content ul ul,.ck.ck-content ul ol,.ck.ck-content ol ul,.ck.ck-content ol ol{margin:2px 0}
+.ck.ck-content li{list-style-position:outside}
+/* Ký hiệu đầu dòng / số thứ tự theo kiểu chữ của mục (setupListMarkerStyle() ở ghichu_soanthao.js). Mỗi <li> tự đặt lại biến
+   (initial) để danh sách lồng không thừa hưởng của mục cha; biến chưa đặt thì ::marker thừa hưởng như bình thường. */
+.ck.ck-content li{--mk-color:initial;--mk-size:initial;--mk-font:initial}
+.ck.ck-content li::marker{color:var(--mk-color);font-size:var(--mk-size);font-family:var(--mk-font)}
+.ck.ck-content table{border-collapse:collapse}
+.ck.ck-content code{background:var(--soft);padding:.1em .3em;border-radius:4px}
+/* Chú thích ảnh: CKEditor mặc định chữ #333 nền #f7f7f7 → ở giao diện Tối chữ tối trên nền tối; dùng token theo giao diện. */
+.ck.ck-content .image > figcaption{background:var(--soft);color:var(--muted)}
+.ck-powered-by-balloon{display:none !important}
+
+/* ---------- print (UC-17: xuất PDF / in) ---------- */
+#print-title{display:none}
+@media print{
+  /* Ép bản in luôn chữ đen/nền trắng bất kể đang ở giao diện Tối (UC-09) — mọi selector khác
+     đọc màu qua các biến này (var(--ink), var(--panel)...) khai báo ở ghichu.css, nên chỉ cần
+     override đúng 1 chỗ là toàn bộ nội dung in ra tự động theo. !important để thắng chắc chắn
+     rule :root[data-theme="dark"] (có độ đặc trưng cao hơn 1 :root trơn). */
+  :root{
+    --bg:#ffffff !important; --panel:#ffffff !important; --soft:#ffffff !important;
+    --border:#dddddd !important; --border-soft:#dddddd !important;
+    --ink:#000000 !important; --ink-strong:#000000 !important; --muted:#333333 !important;
+  }
+  body *{visibility:hidden}
+  .editor-scroll,.editor-scroll *{visibility:visible}
+  .editor-scroll{position:absolute;inset:0;padding:0 !important;overflow:visible}
+  .editor-shell{max-width:none;margin:0;zoom:1 !important}
+  .editor-empty{display:none !important}
+  #print-title{display:block;visibility:visible;font-family:Figtree,sans-serif;margin-bottom:18px}
+  #print-title .p-subject{font-size:12px;color:#5a6479;margin:0 0 2px}
+  #print-title .p-chapter{font-size:22px;font-weight:700;color:#050d2b;margin:0}
+}
+
+/* ---------- responsive ----------
+   Cây Notebook < 880px không còn bị ẩn hẳn: thành ngăn kéo trượt từ trái (.sidebar.is-drawer, nút ☰ #btn-tree) —
+   xem css/responsive.css + updateWorkspaceCols() trong js/ghichu.js. */
+
+/* ---- Hộp văn bản PDF: thanh định dạng nổi (Font Color | Increase / Decrease Font Size | Character Spacing | Delete) ---- */
+.pdf-textbox-editing{border:2px dashed #1971c2;border-radius:2px;line-height:1.3;background:rgba(255,255,255,.94)}   /* trang PDF luôn trắng — kể cả giao diện Tối */
+.pdf-textbox-editing::placeholder{color:var(--muted-2);font-style:normal}
+.ptb-bar{position:fixed;z-index:75;display:none;align-items:center;gap:4px;padding:7px 10px;background:var(--panel);border:1px solid var(--border-soft);
+  border-radius:10px;box-shadow:0 6px 20px rgba(9,22,60,.16);color:var(--ink-strong)}
+.ptb-bar.show{display:flex}
+.ptb-btn{height:34px;min-width:34px;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 5px;background:transparent;border:0;border-radius:7px;color:inherit;cursor:pointer}
+.ptb-btn:hover:not(:disabled){background:var(--hover)}
+.ptb-btn:disabled{opacity:.35;cursor:default}
+.ptb-color{padding:0 4px 0 6px}
+.ptb-chev{margin-left:2px}
+.ptb-sep{width:1px;height:24px;margin:0 5px;background:var(--border-soft)}
+.ptb-colors{padding:8px 10px 10px;min-width:196px}
+.ptb-swatches{display:grid;grid-template-columns:repeat(6,24px);gap:6px;margin-top:6px}
+.ptb-swatches .dd-swatch{width:24px;height:24px;border-radius:5px;border:1px solid rgba(0,0,0,.15);cursor:pointer;padding:0}
+.ptb-swatches .dd-swatch.on{outline:2px solid var(--accent);outline-offset:1px}
+.ptb-more{position:relative;display:block;margin-top:9px;padding:6px 4px;border-radius:6px;font-size:12.5px;color:var(--ink);cursor:pointer}
+.ptb-more:hover{background:var(--hover)}
+.ptb-more input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+@media print{.ptb-bar{display:none!important}}

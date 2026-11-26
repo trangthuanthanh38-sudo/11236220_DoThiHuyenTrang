@@ -1,0 +1,157 @@
+/* ghichu_ve.css — thẻ Draw: lớp vẽ trực tiếp trên trang (Chương + từng trang PDF), ribbon bút / hình khối / nền trang
+   (logic ở js/ghichu_ve.js). Màu dùng token của ghichu.css nên chạy cả giao diện Tối. */
+
+/* ---- Lớp vẽ chồng lên nội dung ---- */
+.dv-layer{position:absolute;inset:0;z-index:5;pointer-events:none}
+.dv-layer.active{pointer-events:auto;touch-action:none;cursor:crosshair}
+.dv-layer.active[data-tool="pen"]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='3' fill='%23050d2b' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 10 10,crosshair}
+.dv-layer.active[data-tool="eraser"]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Ccircle cx='11' cy='11' r='8' fill='rgba(229,153,247,.35)' stroke='%23862e9c' stroke-width='1.5'/%3E%3C/svg%3E") 11 11,cell}
+.dv-ink{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.dv-layer:not(.active) .dv-ink .dv-hit{pointer-events:stroke;cursor:move}
+.dv-shapes{position:absolute;inset:0;pointer-events:none}
+.dv-shape{position:absolute;pointer-events:none}
+.dv-shape svg{position:absolute;inset:0;overflow:visible}
+.dv-layer:not(.active) .dv-shape .dv-hit{pointer-events:all;cursor:move}
+.dv-layer:not(.active) .dv-shape:not(.closed) .dv-hit{pointer-events:stroke}
+.dv-shape.dv-preview{opacity:.75}
+.dv-shape-text{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px 6px;box-sizing:border-box;
+  white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.3;color:var(--ink-strong);font-family:Figtree,sans-serif;pointer-events:none;outline:none}
+.dv-shape.editing .dv-shape-text{pointer-events:auto;cursor:text;background:color-mix(in srgb,var(--panel) 55%,transparent);border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--accent)}
+:root:not([data-theme="dark"]) .dv-marker{mix-blend-mode:multiply}
+
+/* khung chọn + tay nắm */
+.dv-ui{position:absolute;inset:0;pointer-events:none}
+.dv-selbox{position:absolute;border:1.5px dashed var(--accent);border-radius:2px;pointer-events:none}
+.dv-handle{position:absolute;width:11px;height:11px;margin:-6px 0 0 -6px;background:var(--panel);border:1.5px solid var(--accent);border-radius:50%;pointer-events:auto;box-shadow:0 1px 3px rgba(9,22,60,.25)}
+.dv-h-nw,.dv-h-se{cursor:nwse-resize}.dv-h-ne,.dv-h-sw{cursor:nesw-resize}.dv-h-n,.dv-h-s{cursor:ns-resize}.dv-h-e,.dv-h-w{cursor:ew-resize}
+.dv-h-a,.dv-h-b{cursor:move;background:var(--accent)}
+
+/* thanh định dạng phần đang chọn */
+.dv-bar{position:fixed;z-index:60;display:none;align-items:center;gap:3px;padding:5px 6px;background:var(--panel);border:1px solid var(--border-soft);border-radius:10px;
+  box-shadow:0 6px 18px rgba(9,22,60,.16);font-size:12.5px;color:var(--ink);white-space:nowrap}
+.dv-bar.show{display:flex}
+.dv-bar-btn{height:28px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--ink);font:inherit;cursor:pointer}
+.dv-bar-btn:hover{background:var(--hover)}
+.dv-bar-btn.dv-del,.dv-menu-row.dv-del{color:var(--danger)}
+.dv-chip{width:14px;height:14px;border-radius:4px;border:1px solid var(--border-soft);display:inline-block}
+.dv-chip.none{background:repeating-linear-gradient(135deg,transparent 0 4px,var(--danger) 4px 5px)!important}
+.dv-bar-w{display:inline-flex;align-items:center;gap:4px;padding:0 4px;color:var(--muted)}
+.dv-bar-w select{height:26px;border:1px solid var(--border-soft);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit}
+.dv-pop{position:absolute;left:0;top:calc(100% + 6px);padding:8px;background:var(--panel);border:1px solid var(--border-soft);border-radius:10px;box-shadow:0 8px 22px rgba(9,22,60,.18)}
+.dv-pop[hidden]{display:none}
+.dv-pal{display:grid;grid-template-columns:repeat(9,20px);gap:5px}
+.dv-sw{width:20px;height:20px;padding:0;border:1px solid var(--border-soft);border-radius:5px;cursor:pointer;position:relative}
+.dv-sw.on{outline:2px solid var(--accent);outline-offset:1px}
+.dv-sw.none{background:repeating-linear-gradient(135deg,var(--panel) 0 4px,var(--danger) 4px 5px)}
+.dv-sw-more{display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);background:var(--soft);overflow:hidden}
+.dv-sw-more input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* ---- Ribbon thẻ Draw ---- */
+.dv-tools{display:flex;align-items:flex-end;gap:2px;padding:0 2px}
+.dv-tool{position:relative;height:32px;min-width:34px;padding:2px 4px;display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:1px;
+  background:transparent;border:1px solid transparent;border-radius:7px;color:var(--ink);font:inherit;font-size:11px;cursor:pointer}
+.dv-tool:hover:not(:disabled){background:var(--hover)}
+.dv-tool.on{background:var(--active-tint);border-color:var(--active-line)}
+.dv-tool:disabled{opacity:.45;cursor:default}
+.dv-tool-select{justify-content:center}
+.dv-tool-select svg{margin-top:2px}
+.dv-pen,.dv-tool-eraser{width:34px;min-width:34px;padding:2px 0 0;justify-content:flex-start;overflow:hidden}  /* Tẩy + mọi bút cùng khung → thẳng hàng */
+.dv-ico{display:block;flex:0 0 auto}
+.dv-pen-caret{position:absolute;right:0;bottom:1px;font-size:9px;line-height:1;color:var(--muted)}
+.dv-add{justify-content:center}
+.dv-add-plus{font-size:24px;line-height:1;color:#2f9e44;font-weight:300}
+.dv-glyph{display:inline-flex}
+/* nút "Định dạng nền" + nút Hình khối chỉ có icon (theo mẫu Word) */
+.dv-rgroup{display:flex;align-items:center;gap:6px}
+.dv-rbtn{height:32px;display:inline-flex;align-items:center;gap:8px;padding:0 10px 0 8px;background:transparent;border:1px solid transparent;border-radius:6px;
+  color:var(--ink-strong);font:inherit;font-size:13.5px;cursor:pointer}
+.dv-rbtn:hover:not(:disabled){background:var(--hover)}
+.dv-rbtn.on{background:var(--hover-strong);border-color:var(--border-soft)}
+.dv-rbtn:disabled{opacity:.45;cursor:default}
+.dv-rbtn-icon{gap:3px;padding:0 6px}
+.dv-rbtn-ico{flex:0 0 auto;display:block}
+.dv-rbtn-chev{flex:0 0 auto;color:var(--ink);margin-left:-1px}
+.dv-vsep{width:1px;height:28px;background:var(--border-soft)}
+
+.dv-menu{min-width:220px;padding:4px 2px;font-size:12.5px;color:var(--ink)}
+.dv-menu-title{padding:6px 8px 4px;font-weight:700;color:var(--ink-strong)}
+.dv-menu-grid{display:flex;flex-wrap:wrap;gap:2px;padding:0 6px 6px}
+.dv-menu-ico{width:32px;height:32px;display:grid;place-items:center;padding:0;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--ink-strong);cursor:pointer}
+.dv-menu-ico:hover{background:var(--hover)}
+.dv-menu-ico.on{background:var(--active-tint);border-color:var(--active-line)}
+.dv-menu-sep{height:1px;margin:4px 6px;background:var(--border)}
+.dv-menu-row{width:100%;display:flex;align-items:center;gap:8px;padding:7px 8px;background:transparent;border:0;border-radius:6px;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.dv-menu-row:hover{background:var(--hover)}
+.dv-menu-row small{margin-left:auto;color:var(--muted-2);font-size:11px}
+.dv-check{width:16px;height:16px;display:grid;place-items:center;border:1.5px solid var(--border-soft);border-radius:4px;font-size:11px;color:#fff}
+.dv-menu-row.on .dv-check{background:var(--accent);border-color:var(--accent)}
+.dv-menu-hint{padding:6px 8px 4px;font-size:11.5px;line-height:1.45;color:var(--muted-2);max-width:280px}
+.dv-addico{width:22px;display:inline-grid;place-items:center;color:var(--ink-strong)}
+.dv-add-menu{min-width:190px}
+.dv-add-menu .dv-menu-row{font-size:13px;padding:8px 10px}
+/* Laser Pointer: nét đỏ phát sáng, thả chuột thì mờ dần (không lưu) */
+.dv-laser{filter:drop-shadow(0 0 3px #ff1f1f) drop-shadow(0 0 6px rgba(255,31,31,.6));transition:opacity .85s ease-out}
+.dv-laser.fade{opacity:0}
+.dv-bg-menu{min-width:320px}
+.dv-bg-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 8px 8px}
+.dv-bg-tile{width:56px;height:56px;padding:0;background-color:#fff;border:1.5px solid var(--border-soft);border-radius:4px;font:inherit;font-size:11.5px;color:#495057;cursor:pointer}
+.dv-bg-tile:hover{border-color:var(--active-line)}
+.dv-bg-tile.on{outline:2.5px solid var(--accent);outline-offset:1px}
+/* bảng chỉnh bút (theo mẫu Word) */
+.dv-penopt{width:212px;min-width:0;padding:6px 2px 4px}
+.dv-pv{display:flex;justify-content:center;padding:4px 0 6px}
+.dv-pv svg{display:block;width:196px;max-width:100%}
+.dv-thick{display:flex;align-items:center;justify-content:space-between;padding:2px 8px 8px}
+.dv-tstep,.dv-tdot{width:24px;height:26px;display:grid;place-items:center;padding:0;background:transparent;border:0;border-radius:50%;color:var(--ink-strong);cursor:pointer}
+.dv-tstep:hover:not(:disabled),.dv-tdot:hover{background:var(--hover)}
+.dv-tstep:disabled{opacity:.35;cursor:default}
+.dv-tdot span{display:block;border-radius:50%;background:var(--ink-strong)}
+.dv-tdot.on{box-shadow:inset 0 0 0 1.6px var(--ink-strong)}
+.dv-cgrid{display:grid;grid-template-columns:repeat(4,40px);gap:6px;padding:2px 10px 10px}
+.dv-csw{width:40px;height:30px;padding:0;border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:2px;cursor:pointer}
+.dv-csw:hover{outline:2px solid var(--active-line);outline-offset:1px}
+.dv-csw.on{outline:2px solid #e67700;outline-offset:1px}
+.dv-mico{width:18px;display:inline-grid;place-items:center;flex:0 0 auto}
+.dv-menu-row:disabled{opacity:.45;cursor:default}
+.dv-menu-row:disabled:hover{background:transparent}
+.dv-more{position:relative}
+.dv-more input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+
+/* ---- Nền trang của Chương (Format Background) — lớp ::before của .editor-shell, rộng hơn cột chữ 1 chút như trang giấy ---- */
+.editor-shell.dv-bg{isolation:isolate}
+.editor-shell.dv-bg::before{content:"";position:absolute;top:-16px;bottom:-24px;left:-34px;right:-20px;z-index:-1;pointer-events:none;border-radius:6px;
+  --dv-line:color-mix(in srgb,#4dabf7 38%,transparent);--dv-margin:color-mix(in srgb,#ff6b6b 70%,transparent)}
+/* Mỗi lớp nền là 1 ô đúng 1 bước (background-size) lặp đều — bản cũ dùng repeating-gradient cỡ cả khung + lệch vị trí
+   nên chỗ nối ảnh nền bị kẻ đôi ở mép trên / trái. */
+.editor-shell.dv-bg-rule::before{background-image:
+  linear-gradient(90deg,transparent 22px,var(--dv-margin) 22px,var(--dv-margin) 23.5px,transparent 23.5px),
+  linear-gradient(180deg,transparent calc(var(--dv-step) - 1px),var(--dv-line) calc(var(--dv-step) - 1px));
+  background-size:100% 100%,100% var(--dv-step);background-repeat:no-repeat,repeat-y;
+  background-position:0 0,0 16px}
+.editor-shell.dv-bg-grid::before{background-image:
+  linear-gradient(180deg,var(--dv-line) 1px,transparent 1px),
+  linear-gradient(90deg,var(--dv-line) 1px,transparent 1px);
+  background-size:var(--dv-step) var(--dv-step);background-repeat:repeat;
+  background-position:0 16px,34px 0}
+@media print{.dv-bar,.dv-ui{display:none!important}}
+
+/* ---- Thẻ View (theo Word): Zoom: [100% ▾] · Zoom In · Zoom Out · 100% | Rule Lines ▾ · Page Color ▾ ---- */
+.vz-zoom{display:flex;align-items:center;gap:8px;padding:0 4px;font-size:13.5px;color:var(--ink-strong)}
+.vz-zoom-select{height:30px;min-width:84px;padding:0 6px;border:1px solid var(--border-soft);border-radius:6px;background:var(--panel);color:var(--ink-strong);font:inherit;cursor:pointer}
+.vz-zoom-select:disabled{opacity:.5;cursor:default}
+.vz-btn{height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 6px;background:transparent;border:1px solid transparent;
+  border-radius:6px;color:var(--ink-strong);font:inherit;font-size:13.5px;cursor:pointer}
+.vz-btn:hover:not(:disabled){background:var(--hover)}
+.vz-btn:disabled{opacity:.45;cursor:default}
+.vz-btn svg{display:block;flex:0 0 auto}
+.vz-pc .vz-pc-bar{fill:var(--vz-pc,#f5c242)}
+.vz-pc-menu{min-width:232px}
+.vz-pc-grid{display:grid;grid-template-columns:repeat(5,36px);gap:6px;padding:2px 10px 8px}
+.vz-pc-sw{width:36px;height:26px;padding:0;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);border-radius:3px;cursor:pointer}
+.vz-pc-sw:hover{outline:2px solid var(--active-line);outline-offset:1px}
+.vz-pc-sw.on{outline:2px solid #e67700;outline-offset:1px}
+.vz-pc-more{position:relative;cursor:pointer}
+.vz-pc-more input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+/* Page Color — tô cả vùng trang Chương; giao diện Tối pha với nền tối để chữ sáng vẫn đọc được */
+.editor-scroll.dv-page{background-color:var(--dv-page)}
+:root[data-theme="dark"] .editor-scroll.dv-page{background-color:color-mix(in srgb,var(--dv-page) 18%,var(--panel))}
